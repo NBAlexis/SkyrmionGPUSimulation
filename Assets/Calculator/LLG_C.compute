@@ -5,8 +5,7 @@
 // with cs.SetTexture
 //RWStructuredBuffer<float3> magneticMomentum;
 RWTexture2D<float4> magneticMomentum;
-//RWTexture2D<float3> magneticMomentumBackGround;
-//RWTexture2D<float>  magneticMomentumEdgeMask;
+Texture2D<float4>  boundaryCondition;
 Texture2D<float4>  exchangeStrength;
 
 uint2 size;
@@ -41,6 +40,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     sup = 2.0f * (sup - 0.5f);
     sdown = 2.0f * (sdown - 0.5f);
 
+    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+
     float j_s       = exchangeStrength[id.xy].x;
     float j_left    = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)].x : 0.0f;
     float j_up      = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
@@ -60,5 +61,5 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     //magneticMomentum[id.x] = normalize(s + timestep * newS);
 
     float3 retC = normalize(s + timestep * newS) * 0.5f + 0.5f;
-    magneticMomentum[id.xy] = float4(retC.r, retC.g, retC.b, 1.0f);
+    magneticMomentum[id.xy] = float4(retC.r, retC.g, retC.b, 1.0f) * edge + (1.0f - edge) * float4(0.5f, 0.5f, 0.5f, 1.0f);
 }

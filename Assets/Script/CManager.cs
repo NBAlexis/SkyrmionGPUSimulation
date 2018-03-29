@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using SFB;
 using UniLua;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 [AddComponentMenu("Skyrmion/Scripts/Manager")]
 public class CManager : MonoBehaviour
@@ -17,6 +15,7 @@ public class CManager : MonoBehaviour
     public RawImage Indicator;
 
     public Text FrameCount;
+    public Text SimDate;
 
     public Button Bt;
 
@@ -26,15 +25,26 @@ public class CManager : MonoBehaviour
     public InputField EJ;
     public InputField alpha;
     public InputField timestep;
+    public InputField stopstep;
+    public InputField savestep;
+
+    public Text JButtonName;
+    public Text MagButtonName;
+    public Text BoundaryName;
+
+    public Button JButton;
+    public Button MagButton;
+    public Button CondButton;
+    public Button ResetButton;
+    public Button SaveButton;
+
+    public Material GetXYZ;
 
     #endregion
 
     #region Compute Shader
 
     public ComputeShader CmpShader;
-
-    private ComputeBuffer m_MagneticBuff;
-    private Vector3[] m_vMagneticData;
     private int m_iKernelHandle;
 
     #endregion
@@ -48,10 +58,15 @@ public class CManager : MonoBehaviour
 
     private Texture2D m_pTestT2;
     private int m_iFrame = 0;
+    private int m_iStopFrame = -1;
+    private int m_iSaveFrame = -1;
     private bool m_bRunning = false;
+    private DateTime m_dtSim;
+
     private bool m_bJSet = false;
-    private bool m_bMagneticSet = false;
-    
+    private bool m_bMagSet = false;
+    private bool m_bCondSet = false;
+
     private static readonly Color[] _color512 = new Color[512 * 512];
 
     // Use this for initialization
@@ -87,6 +102,18 @@ public class CManager : MonoBehaviour
 
             ++m_iFrame;
             FrameCount.text = m_iFrame.ToString();
+
+	        if (m_iStopFrame == m_iFrame)
+	        {
+	            OnBtGo();
+	        }
+
+	        if (m_iFrame > 0 
+             && m_iSaveFrame > 0
+             && 0 == (m_iFrame%m_iSaveFrame))
+	        {
+	            SaveBt();
+	        }
         }
     }
 
@@ -102,6 +129,14 @@ public class CManager : MonoBehaviour
             EJ.interactable = true;
             alpha.interactable = true;
             timestep.interactable = true;
+            stopstep.interactable = true;
+            savestep.interactable = true;
+
+            JButton.interactable = true;
+            CondButton.interactable = true;
+            ResetButton.interactable = true;
+            SaveButton.interactable = true;
+            MagButton.interactable = true;
         }
         else
         {
@@ -112,6 +147,14 @@ public class CManager : MonoBehaviour
             EJ.interactable = false;
             alpha.interactable = false;
             timestep.interactable = false;
+            stopstep.interactable = false;
+            savestep.interactable = false;
+
+            JButton.interactable = false;
+            CondButton.interactable = false;
+            ResetButton.interactable = false;
+            SaveButton.interactable = false;
+            MagButton.interactable = false;
 
             CmpShader.SetFloat("K", float.Parse(K.text));
             CmpShader.SetFloat("D", float.Parse(D.text));
@@ -121,6 +164,14 @@ public class CManager : MonoBehaviour
             CmpShader.SetFloat("alpha", float.Parse(alpha.text));
 
             m_bRunning = true;
+            m_iStopFrame = int.Parse(stopstep.text);
+            m_iSaveFrame = int.Parse(savestep.text);
+
+            if (0 == m_iFrame)
+            {
+                m_dtSim = DateTime.Now;
+                SimDate.text = string.Format("{0}-{1}-{2}-{3}", m_dtSim.Month, m_dtSim.Day, m_dtSim.Hour, m_dtSim.Minute);
+            }
         }
     }
 
@@ -129,7 +180,19 @@ public class CManager : MonoBehaviour
         string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script", Application.dataPath, "lua", false);
         if (sPath.Length > 0)
         {
-            LoadManetic(sPath[0]);
+            if (LoadManetic(sPath[0]))
+            {
+                string sFileName = sPath[0];
+                sFileName = sFileName.Replace("\\", "/");
+                int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                MagButtonName.text = sFileName.Substring(iLastSlash);
+                m_bMagSet = true;
+
+                if (m_bMagSet && m_bJSet && m_bCondSet)
+                {
+                    Bt.interactable = true;
+                }
+            }
         }
     }
 
@@ -138,13 +201,74 @@ public class CManager : MonoBehaviour
         string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script", Application.dataPath, "lua", false);
         if (sPath.Length > 0)
         {
-            LoadJValue(sPath[0]);
+            if (LoadJValue(sPath[0]))
+            {
+                string sFileName = sPath[0];
+                sFileName = sFileName.Replace("\\", "/");
+                int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                JButtonName.text = sFileName.Substring(iLastSlash);
+                m_bJSet = true;
+
+                if (m_bMagSet && m_bJSet && m_bCondSet)
+                {
+                    Bt.interactable = true;
+                }
+            }
         }
+    }
+
+    public void LoadEdgeBt()
+    {
+        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the picture", Application.dataPath, new [] { new ExtensionFilter("Image Files", "png", "jpg", "jpeg")}, false);
+        if (sPath.Length > 0)
+        {
+            if (SetEdge(sPath[0]))
+            {
+                string sFileName = sPath[0];
+                sFileName = sFileName.Replace("\\", "/");
+                int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                BoundaryName.text = sFileName.Substring(iLastSlash);
+
+                m_bCondSet = true;
+
+                if (m_bMagSet && m_bJSet && m_bCondSet)
+                {
+                    Bt.interactable = true;
+                }
+            }
+        }
+    }
+
+    public void SaveBt()
+    {
+        string sDate = SimDate.text;
+        int iStep = m_iFrame;
+        CExportData.Save(sDate, iStep, 
+            string.Format("start time={0}\nstep={1}\nj value={2}\ninitla magnetic={3}\nboundary condition={4}\nK={5}\nD={6}\nB={7}\nGilbert alpha={8}\nElectric current jx={9}\ntime step={10}",
+            m_dtSim.ToString("MM-dd-yyyy hh:mm:ss"),
+            m_iFrame,
+            JButtonName.text,
+            MagButtonName.text,
+            BoundaryName.text,
+            K.text,
+            D.text,
+            B.text,
+            alpha.text,
+            EJ.text,
+            timestep.text
+            ), 
+            InternalRT,
+            GetXYZ);
+    }
+
+    public void ResetBt()
+    {
+        m_iFrame = 0;
     }
 
     private static readonly Vector3[] _mags = new Vector3[512 * 512];
     private static readonly float[] _mag_ret = new float[3];
-    private void LoadManetic(string sLuaFileName)
+    private bool LoadManetic(string sLuaFileName)
     {
         string sLuaCode = File.ReadAllText(sLuaFileName);
         ILuaState luaState = LuaAPI.NewState();
@@ -153,13 +277,13 @@ public class CManager : MonoBehaviour
 
         if (ThreadStatus.LUA_OK != status)
         {
-            Debug.LogError("Lua file excute error.");
-            return;
+            ShowErrorMessage("Lua file excute error.");
+            return false;
         }
         if (!luaState.IsTable(-1))
         {
-            Debug.LogError("Lua file does not return function table.");
-            return;
+            ShowErrorMessage("Lua file does not return function table.");
+            return false;
         }
 
         int tableIndex = luaState.GetTop();
@@ -181,8 +305,8 @@ public class CManager : MonoBehaviour
             luaState.GetField(-1, funcName);
             if (!luaState.IsFunction(-1))
             {
-                Debug.LogError("Lua file return a table, but the table does not return function or the name is wrong.");
-                return;
+                ShowErrorMessage("Lua file return a table, but the table does not return function or the name is wrong.");
+                return false;
             }
             int iFunctionPointer = luaState.L_Ref(LuaDef.LUA_REGISTRYINDEX);
             dicFunctions.Add(funcName, iFunctionPointer);
@@ -192,8 +316,8 @@ public class CManager : MonoBehaviour
 
         if (!dicFunctions.ContainsKey("GetMagneticByLatticeIndex"))
         {
-            Debug.LogError("GetMagneticByLatticeIndex function not found.");
-            return;
+            ShowErrorMessage("GetMagneticByLatticeIndex function not found.");
+            return false;
         }
 
         for (int x = 0; x < 512; ++x)
@@ -212,15 +336,15 @@ public class CManager : MonoBehaviour
 
                 if (status != ThreadStatus.LUA_OK)
                 {
-                    Debug.LogError("Call function GetMagneticByLatticeIndex failed, function may have error.");
+                    ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
                 }
 
                 //get result out
                 int newTop = luaState.GetTop();
                 if (newTop == oldTop)
                 {
-                    Debug.LogError("function should return something.");
-                    return;
+                    ShowErrorMessage("function should return something.");
+                    return false;
                 }
 
                 for (int i = oldTop + 1, j = 0; i <= newTop && j < 3; ++i, ++j)
@@ -241,13 +365,14 @@ public class CManager : MonoBehaviour
         }
 
         SetCurrentState(_mags);
+        return true;
     }
 
     private void SetCurrentState(Vector3[] magnetic)
     {
         if (null == m_pTestT2)
         {
-            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false, false);
+            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
         }
 
         //m_vMagneticData = new Vector3[512 * 512];
@@ -278,7 +403,7 @@ public class CManager : MonoBehaviour
     }
 
     private static readonly float[] _jvalues = new float[512 * 512];
-    private void LoadJValue(string sLuaFileName)
+    private bool LoadJValue(string sLuaFileName)
     {
         string sLuaCode = File.ReadAllText(sLuaFileName);
         ILuaState luaState = LuaAPI.NewState();
@@ -287,13 +412,13 @@ public class CManager : MonoBehaviour
 
         if (ThreadStatus.LUA_OK != status)
         {
-            Debug.LogError("Lua file excute error.");
-            return;
+            ShowErrorMessage("Lua file excute error.");
+            return false;
         }
         if (!luaState.IsTable(-1))
         {
-            Debug.LogError("Lua file does not return function table.");
-            return;
+            ShowErrorMessage("Lua file does not return function table.");
+            return false;
         }
 
         int tableIndex = luaState.GetTop();
@@ -315,8 +440,8 @@ public class CManager : MonoBehaviour
             luaState.GetField(-1, funcName);
             if (!luaState.IsFunction(-1))
             {
-                Debug.LogError("Lua file return a table, but the table does not return function or the name is wrong.");
-                return;
+                ShowErrorMessage("Lua file return a table, but the table does not return function or the name is wrong.");
+                return false;
             }
             int iFunctionPointer = luaState.L_Ref(LuaDef.LUA_REGISTRYINDEX);
             dicFunctions.Add(funcName, iFunctionPointer);
@@ -326,8 +451,8 @@ public class CManager : MonoBehaviour
 
         if (!dicFunctions.ContainsKey("GetJValueByLatticeIndex"))
         {
-            Debug.LogError("GetJValueByLatticeIndex function not found.");
-            return;
+            ShowErrorMessage("GetJValueByLatticeIndex function not found.");
+            return false;
         }
 
         for (int x = 0; x < 512; ++x)
@@ -346,15 +471,15 @@ public class CManager : MonoBehaviour
 
                 if (status != ThreadStatus.LUA_OK)
                 {
-                    Debug.LogError("Call function GetMagneticByLatticeIndex failed, function may have error.");
+                    ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
                 }
 
                 //get result out
                 int newTop = luaState.GetTop();
                 if (newTop == oldTop)
                 {
-                    Debug.LogError("function should return something.");
-                    return;
+                    ShowErrorMessage("function should return something.");
+                    return false;
                 }
 
                 _jvalues[y * 512 + x] = (float)luaState.ToNumber(oldTop + 1);
@@ -370,13 +495,14 @@ public class CManager : MonoBehaviour
         }
 
         SetJTexture(_jvalues);
+        return true;
     }
 
     private void SetJTexture(float[] js)
     {
         if (null == JTexture)
         {
-            JTexture = new Texture2D(512, 512, TextureFormat.RFloat, false, true);
+            JTexture = new Texture2D(512, 512, TextureFormat.RFloat, false);
         }
 
         for (int i = 0; i < 512 * 512; ++i)
@@ -386,6 +512,28 @@ public class CManager : MonoBehaviour
         JTexture.SetPixels(_color512);
         JTexture.Apply(false);
         CmpShader.SetTexture(m_iKernelHandle, "exchangeStrength", JTexture);
+    }
+
+    private Texture2D _theEdgeTexture = null;
+    private bool SetEdge(string sPNGFileName)
+    {
+        if (null == _theEdgeTexture)
+        {
+            _theEdgeTexture = new Texture2D(512, 512, TextureFormat.Alpha8, false);
+        }
+        if (!_theEdgeTexture.LoadImage(File.ReadAllBytes(sPNGFileName), true))
+        {
+            ShowErrorMessage("Not support this file format.");
+            return false;
+        }
+
+        if (512 != _theEdgeTexture.width || 512 != _theEdgeTexture.height)
+        {
+            ShowErrorMessage("Only support 512 x 512 file.");
+            return false;
+        }
+        CmpShader.SetTexture(m_iKernelHandle, "boundaryCondition", _theEdgeTexture);
+        return true;
     }
 
     private static int Traceback(ILuaState lua)
@@ -406,4 +554,37 @@ public class CManager : MonoBehaviour
         }
         return 1;
     }
+
+    public void ShowErrorMessage(string sMsg)
+    {
+        m_sMessage = sMsg;
+        m_bMsgShow = true;
+    }
+
+
+    #region Old GUI MessageBox
+
+    private Rect m_rcWindowRect = new Rect(Screen.width * 0.05f, Screen.height * 0.05f, Screen.width * 0.9f, Screen.height * 0.9f);
+    private bool m_bMsgShow = false;
+    private string m_sMessage = "";
+
+    private void OnGUI()
+    {
+        if (m_bMsgShow)
+        {
+            m_rcWindowRect = GUI.Window(0, m_rcWindowRect, DialogWindow, "Error");
+        }
+    }
+
+    private void DialogWindow(int windowID)
+    {
+        GUI.Label(new Rect(5, 5, m_rcWindowRect.width - 10, 50), m_sMessage);
+
+        if (GUI.Button(new Rect(m_rcWindowRect.width * 0.3f, m_rcWindowRect.height - 30, m_rcWindowRect.width * 0.4f, 20), "OK"))
+        {
+            m_bMsgShow = false;
+        }
+    }
+
+    #endregion
 }

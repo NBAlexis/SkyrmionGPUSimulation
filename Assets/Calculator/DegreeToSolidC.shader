@@ -75,14 +75,15 @@ Shader "Skyrmion/DegreeToC" {
         float4 frag(v2f i) : COLOR
         {
             float4 c = tex2D(_MainTex, i.uv);
-            float3 s = 2.0f * (c.rgb - 0.5f);
+            float3 s = 2.0f * (c.xyz - 0.5f);
+            float fDarkness = saturate(1.0f - s.z);
 
             float4 retC = saturate(
                 float4( 
-                    saturate(dot(float2(-1.0f, 1.0f), float2(s.x, s.y))),
-                    saturate(dot(float2(-1.0f, -1.0f), float2(s.x, s.y))),
-                    saturate(dot(float2(1.0f, 0.0f), float2(s.x, s.y))),
-                    saturate(1.0f - s.z)
+                    saturate(dot(float2(-1.0f, 1.0f), float2(s.x, s.y))) * fDarkness + (1.0f - fDarkness),
+                    saturate(dot(float2(-1.0f, -1.0f), float2(s.x, s.y))) * fDarkness + (1.0f - fDarkness),
+                    saturate(dot(float2(1.0f, 0.0f), float2(s.x, s.y))) * fDarkness + (1.0f - fDarkness),
+                    1.0f
                 ));
 
 #ifdef UNITY_UI_CLIP_RECT
