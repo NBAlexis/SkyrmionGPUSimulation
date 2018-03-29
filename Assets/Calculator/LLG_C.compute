@@ -1,0 +1,64 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+//RWStructuredBuffer<float3> magneticMomentum;
+RWTexture2D<float4> magneticMomentum;
+//RWTexture2D<float3> magneticMomentumBackGround;
+//RWTexture2D<float>  magneticMomentumEdgeMask;
+Texture2D<float4>  exchangeStrength;
+
+uint2 size;
+float K;
+float D;
+float B;
+float jx;
+float alpha;
+float timestep;
+
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    //uint x = id.x / size.x;
+    //uint y = id.x % size.y;
+    //float3 zero3     = float3(0.0f, 0.0f, 0.0f);
+    //float3 s         = magneticMomentum[id.x];
+    //float3 sleft     = x > 1 ? magneticMomentum[y * size.x + (x - 1)] : zero3;
+    //float3 sright    = x < (size.x - 1) ? magneticMomentum[y * size.x + (x + 1)] : zero3;
+    //float3 sup       = y > 1 ? magneticMomentum[(y - 1) * size.x + x] : zero3;
+    //float3 sdown     = y < (size.y - 1) ? magneticMomentum[(y + 1) * size.x + x] : zero3;
+
+    float3 zero3 = float3(0.5f, 0.5f, 0.5f);
+    float3 s = magneticMomentum[id.xy].xyz;
+    float3 sleft    = id.x > 1 ? magneticMomentum[id.xy - uint2(1, 0)].xyz : zero3;
+    float3 sright   = id.x < (size.x - 1) ? magneticMomentum[id.xy + uint2(1, 0)].xyz : zero3;
+    float3 sup      = id.y > 1 ? magneticMomentum[id.xy - uint2(0, 1)].xyz : zero3;
+    float3 sdown    = id.y < (size.y - 1) ? magneticMomentum[id.xy + uint2(0, 1)].xyz : zero3;
+    s = 2.0f * (s - 0.5f);
+    sleft = 2.0f * (sleft - 0.5f);
+    sright = 2.0f * (sright - 0.5f);
+    sup = 2.0f * (sup - 0.5f);
+    sdown = 2.0f * (sdown - 0.5f);
+
+    float j_s       = exchangeStrength[id.xy].x;
+    float j_left    = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)].x : 0.0f;
+    float j_up      = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
+
+    float3 vright    = float3(1.0, 0.0, 0.0);
+    float3 vdown     = float3(0.0, 1.0, 0.0);
+
+    float3 heff = (j_left * sleft + j_s * sright + j_up * sup + j_s * sdown)
+        + D * (cross(sright, vright) - cross(sleft, vright) + cross(sdown, vdown) - cross(sup, vdown))
+        + float3(0.0f, 0.0f, B) + K * s;
+
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, heff) + stt;
+    newS = newS - alpha * cross(s, newS);
+
+    //magneticMomentum[id.x] = normalize(s + timestep * newS);
+
+    float3 retC = normalize(s + timestep * newS) * 0.5f + 0.5f;
+    magneticMomentum[id.xy] = float4(retC.r, retC.g, retC.b, 1.0f);
+}

@@ -1,0 +1,292 @@
+\documentclass[aps,superscriptaddress,groupedaddress]{revtex4}  % for double-spaced preprint
+
+\usepackage{graphicx}  % needed for figures
+\usepackage{float}
+\usepackage{dcolumn}   % needed for some tables
+\usepackage{bm}        % for math
+\usepackage{amssymb}   % for math
+\usepackage{slashed}   % for Dirac Slash
+\usepackage{amsmath}   % for mutiline eqn
+\usepackage{simplewick} % for contraction
+\usepackage{verbatim}  % for multi-line comment
+\usepackage{color} % for textcolor
+\usepackage{appendix} % for appendix
+\usepackage{epstopdf}
+\usepackage{subfig}
+
+% \usepackage[numbers,sort&compress]{natbib} %for cite
+
+% avoids incorrect hyphenation, added Nov/08 by SSR
+\hyphenation{ALPGEN}
+\hyphenation{EVTGEN}
+\hyphenation{PYTHIA}
+
+% for bookmarks
+\usepackage[bookmarks=true,colorlinks=true,linkcolor=blue,unicode=true]{hyperref}
+
+\begin{document}
+
+\widetext
+
+\title{A GPU simulation of skyrmion}
+
+\date{\today}
+
+
+\begin{abstract}
+A GPU simulation of skyrmion.
+\end{abstract}
+
+\maketitle
+
+\section{\label{sec:1}LLG}
+
+The Landau-Lifshitz-Gilbert-Equation~(LLG) can be written as (Eq.~(13) of Ref.~\cite{review1} and Eq.~(7) of Ref.~\cite{hamiton}, NOTE that the sign of the last term is `+' in Eq.~(7) of Ref.~\cite{hamiton})
+\begin{equation}
+\begin{split}
+&\dot {\bf n}=\gamma {\bf B}_{\rm eff}\times {\bf n}-\frac{\alpha \gamma}{|n|} {\bf n}\times \dot{\bf n}-\frac{\hbar \gamma}{2e}\left({\bf j}\cdot {\bf \nabla}\right){\bf n}
+\end{split}
+\end{equation}
+where ${\bf n}$ is the magnetic momentum, $\gamma(\gamma > 0)$ is the gyromagnetic ratio, $\alpha$ represents Gilbert damping, ${\bf B}_{\rm eff}$ is the effective field arising from the spin Hamiltonian, and can be written as ($H_S$ is from Ref.~\cite{hamiton}, before Eq.~(1), also Eq.~(4) in Ref.~\cite{pin2})
+\begin{equation}
+\begin{split}
+&{\bf B}_{\rm eff}\equiv \frac{\delta H_S}{\delta {\bf n}}\\
+&H_S=\int d^D x\frac{J}{2a} (\nabla  {\bf n})^2+\frac{D}{a^2}{\bf n}\cdot \left(\nabla \times {\bf n}\right)-\frac{\mu}{a^3}{\bf B}\cdot {\bf n}\\
+\end{split}
+\end{equation}
+
+\section{\label{sec:2}LLG in 2D lattice}
+
+In the following, for simplicity, we use $\delta = a({\bf e}_x, {\bf e}_y)$, $\delta _x=a{\bf e}_x, \delta _y=a{\bf e}_y$, where $a$ is the distance between two lattice.
+
+\subsection{\label{sec:2.1}Spin torque}
+Written in lattice, so that
+\begin{equation}
+\begin{split}
+&\left({\bf j}\cdot \nabla\right) {\bf n}=\sum _i j_i\partial _i n_x{\bf e}_x+\sum _i j_i\partial _i n_y{\bf e}_y+\sum _i j_i\partial _i n_z{\bf e}_z\\
+\end{split}
+\end{equation}
+In 2D, it is
+\begin{equation}
+\begin{split}
+&\left({\bf j}\cdot \nabla\right) {\bf n}= \sum _{i=x,y}j_i(\partial _i n_x{\bf e}_x+ \partial _i n_y{\bf e}_y+\partial _i n_z{\bf e}_z)\\
+&=\frac{1}{a}\sum _{i=x,y}j_i(\frac{n_{x}({\bf r}+\delta _i)-n_{x}({\bf r}-\delta _i)}{2}{\bf e}_x+ \frac{n_{y}({\bf r}+\delta _i)-n_{y}({\bf r}-\delta _i)}{2}{\bf e}_y+\frac{n_{z}({\bf r}+\delta _i)-n_{z}({\bf r}-\delta _i)}{2}{\bf e}_z)\\
+&=\frac{1}{a}\sum _{i=x,y}j_i\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}
+\end{split}
+\end{equation}
+Sometimes, it is also written as (see last term in Eq.~(8) in Ref.~\cite{pin}, it also says this is the discrete version of the continuous term $({\bf j}\cdot \nabla ){\bf n}$ before Eq.~(10))
+\begin{equation}
+\begin{split}
+&\left({\bf j}\cdot \nabla\right) {\bf n}=\frac{1}{a}\sum _{i=x,y}j_i{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)
+\end{split}
+\end{equation}
+that is because, for a unit vector, one have
+\begin{equation}
+\begin{split}
+&{\bf n}\cdot \partial _i {\bf n}=0
+\end{split}
+\end{equation}
+the discrete version is
+\begin{equation}
+\begin{split}
+&{\bf n}(\bf {r})\cdot \frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2a}=0
+\end{split}
+\end{equation}
+so that
+\begin{equation}
+\begin{split}
+&{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)\\
+&=\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}({\bf n}({\bf r})\cdot {\bf n}({\bf r}))-{\bf n}({\bf r}) \left({\bf n}({\bf r})\cdot \frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\right)\\
+&=\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\\
+\end{split}
+\end{equation}
+to be consist with the references, we use
+\begin{equation}
+\begin{split}
+&\left({\bf j}\cdot \nabla\right) {\bf n}=\frac{1}{a}\sum _{i=x,y}j_i{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)
+\end{split}
+\end{equation}
+
+In simulation, to simplify, we always take the direction of ${\bf j}$ as ${\bf x}$-axis, so we only have
+\begin{equation}
+\begin{split}
+&\frac{1}{a}j_x{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _x)-{\bf n}({\bf r}-\delta _x)}{2}\times {\bf n}({\bf r})\right)
+\end{split}
+\end{equation}
+
+\subsection{\label{sec:2.2}J term}
+
+$(\nabla  {\bf n})^2$ is confusing, in 2D, it is in fact $\sum _{i=x,y}(\partial _i {\bf n})\cdot (\partial _i {\bf n})$
+Consider in 1-dimension, we have
+\begin{equation}
+\begin{split}
+&{\bf n}(x)\cdot \partial _i {\bf n}(x)=0\\
+&0=\sum _{i=x,y} \partial _i\left({\bf n}(x)\cdot \partial _i {\bf n}(x)\right)=\sum _{i=x,y}(\partial _i {\bf n})\cdot (\partial _i {\bf n}) + {\bf n}\cdot (\sum _{i=x,y}(\partial _i)^2){\bf n}\\
+\end{split}
+\end{equation}
+In lattice, the derivate can be written as
+\begin{equation}
+\begin{split}
+&\frac{d^2}{dx^2}{\bf n}({\bf r})=\frac{1}{a}\left({\bf n}'({\bf r}+\frac{a}{2}{\bf e}_x)-{\bf n}'({\bf r}-\frac{a}{2}{\bf e}_x)\right)
+\end{split}
+\end{equation}
+with
+\begin{equation}
+\begin{split}
+&{\bf n}'({\bf r}+\frac{a}{2}{\bf e}_x)=\frac{1}{a}\left({\bf n}({\bf r}+a{\bf e}_x)-{\bf n}({\bf r})\right)\\
+&{\bf n}'({\bf r}-\frac{a}{2}{\bf e}_x)=\frac{1}{a}\left({\bf n}({\bf r})-{\bf n}({\bf r}-a{\bf e}_x)\right)\\
+\end{split}
+\end{equation}
+so that
+\begin{equation}
+\begin{split}
+&(\sum _{i=x,y}(\partial _i)^2){\bf n}=\frac{1}{a^2}\sum _{i=x,y,-x,-y}{\bf n}({\bf r}+\delta _i)-4{\bf n}({\bf r})
+\end{split}
+\end{equation}
+and
+\begin{equation}
+\begin{split}
+&{\bf n}\cdot (\sum _{i=x,y}(\partial _i)^2){\bf n}=\frac{1}{a^2}\sum _{\langle i\rangle}{\bf n}\cdot {\bf n}_i-4
+\end{split}
+\end{equation}
+
+Throw away the constant term
+\begin{equation}
+\begin{split}
+&\int d^D x\frac{J}{2a}(\nabla {\bf n})^2=-\frac{J}{2a^3}\sum _{\langle i, j\rangle}{\bf n}_i\cdot {\bf n}_j
+\end{split}
+\end{equation}
+where $j$ are all neighbours of $i$, $j=i+\delta_x,i-\delta_x,i+\delta_y,i-\delta_y$.
+
+When $J$ is constant, it can also been written as
+\begin{equation}
+\begin{split}
+&\int d^D x\frac{J}{2a}(\nabla {\bf n})^2=-\frac{J}{a^3}\sum _{{\bf r}}{\bf n}({\bf r})\cdot \left( {\bf n}({\bf r}+\delta _x)+{\bf n}({\bf r}+\delta _y)\right)
+\end{split}
+\end{equation}
+
+
+\subsection{\label{sec:2.3}D term}
+
+In 2D, we find
+\begin{equation}
+\begin{split}
+&{\bf n}\cdot (\nabla \times {\bf n})=n_x \partial _y n_z-n_y \partial _x n_z+n_z\partial _x n_y-n_z \partial _y n_x\\
+&=\frac{1}{2a}\left[\left(n_x({\bf r})(n_z({\bf r}+\delta _y)-n_z({\bf r}-\delta _y))-n_z({\bf r})(n_x({\bf r}+\delta _y)-n_x({\bf r}-\delta _y))\right)\right.\\
+&\left.+\left(n_z({\bf r})(n_y({\bf r}+\delta _x)-n_y({\bf r}-\delta _x))-n_y({\bf r})(n_z({\bf r}+\delta _x)-n_z({\bf r}-\delta _x))\right)\right]\\
+&=\frac{1}{2a}\left[\left(n_x({\bf r})n_z({\bf r}+\delta _y)-n_z({\bf r})n_x({\bf r}+\delta _y)\right)-\left(n_x({\bf r})n_z({\bf r}-\delta _y)-n_z({\bf r})n_x({\bf r}-\delta _y)\right)\right.\\
+&\left.+\left(n_z({\bf r})n_y({\bf r}+\delta _x)-n_y({\bf r})n_z({\bf r}+\delta _x)\right)-\left(n_z({\bf r})n_y({\bf r}-\delta _x)-n_y({\bf r})n_z({\bf r}-\delta _x)\right)\right]\\
+&=-\frac{1}{2a}\left[{\bf n}({\bf r})\cdot \left({\bf n}({\bf r}+\delta _y)\times {\bf e}_y\right)-{\bf n}({\bf r})\cdot \left({\bf n}({\bf r}-\delta _y)\times {\bf e}_y\right)\right.\\
+&\left.+{\bf n}({\bf r})\cdot \left({\bf n}({\bf r}+\delta _x)\times {\bf e}_x\right)-{\bf n}({\bf r})\cdot \left({\bf n}({\bf r}-\delta _x)\times {\bf e}_x\right)\right]\\
+&=-\frac{1}{2a^2}\left[{\bf n}({\bf r})\times {\bf n}({\bf r}+\delta _y)\cdot \delta_y-{\bf n}({\bf r})\times {\bf n}({\bf r}-\delta _y)\cdot \delta_y\right.\\
+&\left.+{\bf n}({\bf r})\times{\bf n}({\bf r}+\delta _x)\cdot \delta_x-{\bf n}({\bf r})\times {\bf n}({\bf r}-\delta _x)\cdot \delta_x\right]\\
+\end{split}
+\end{equation}
+so, one have
+\begin{equation}
+\begin{split}
+&\int d^D x\frac{D}{a^2}{\bf n}\cdot (\nabla \times {\bf n})=-\frac{D}{a^4}\sum _{{\bf r}}\left({\bf n}({\bf r})\times  {\bf n}({\bf r}+\delta _x) \cdot \delta _x+{\bf n}({\bf r})\times  {\bf n}({\bf r}+\delta _y) \cdot \delta _y\right)
+\end{split}
+\end{equation}
+
+It is also
+\begin{equation}
+\begin{split}
+&\int d^D x\frac{D}{a^2}{\bf n}\cdot (\nabla \times {\bf n})=-\frac{D}{a^4}\sum _{{\bf r}}\left({\bf n}({\bf r}+\delta _x)\times \delta _x+{\bf n}({\bf r}+\delta _y)\times \delta _y\right)\cdot {\bf n}({\bf r})
+\end{split}
+\end{equation}
+
+\subsection{\label{sec:2.4}Effective magnetic field}
+
+Using the results, we can write the discrete version of $H_s$ as
+\begin{equation}
+\begin{split}
+&H_S=\sum _{{\bf r}}\left[-\frac{J}{a^3} ({\bf n}({\bf r}+\delta_x)+{\bf n}({\bf r}+\delta_y))-\frac{D}{a^3}  ({\bf n}({\bf r}+\delta_x)\times {{\bf e}}_x+{\bf n}({\bf r}+\delta_y)\times {{\bf e}}_y)-\frac{\mu}{a^3}{\bf B}\right]\cdot {\bf n}({\bf r})
+\end{split}
+\end{equation}
+which leads to
+\begin{equation}
+\begin{split}
+&{\bf B}_{\rm eff}({\bf r})=\frac{\delta H_S}{\delta {\bf n}}=-\frac{1}{a^3} \sum _{i=x,y}\left[J({\bf r}){\bf n}({\bf r}+\delta_i)+J({\bf r}-\delta_i){\bf n}({\bf r}-\delta_i)\right]\\
+&-\frac{1}{a^3}  \sum _{i=x,y}\left[D({\bf r}){\bf n}({\bf r}+\delta_i)\times {{\bf e}}_i-D({\bf r}-\delta _i){\bf n}({\bf r}-\delta_i)\times {{\bf e}}_i\right]-\frac{\mu}{a^3}{\bf B}({\bf r})
+\end{split}
+\end{equation}
+
+\subsection{\label{sec:2.5}anisotropy}
+
+In some material, the effective Hamiltonian can be written with anisotropy terms as (ignore $a$, this is as same as Eq.~(10) in Ref.~{spintransfer})
+\begin{equation}
+\begin{split}
+&H_S=\sum _{{\bf r}}\left[-\frac{J}{a^3} ({\bf n}({\bf r}+\delta_x)+{\bf n}({\bf r}+\delta_y))-\frac{D}{a^3}  ({\bf n}({\bf r}+\delta_x)\times {{\bf e}}_x+{\bf n}({\bf r}+\delta_y)\times {{\bf e}}_y)-\frac{\mu}{a^3}{\bf B}\right.\\
+&\left.-{\bf h}-K{\bf n}({\bf r})\right]\cdot {\bf n}({\bf r})
+\end{split}
+\end{equation}
+
+The contribution of ${\bf h}$ can be just put into the applied magnetic field ${\bf B}$, we also include the contribution of $K$.
+
+\subsection{\label{sec:2.6}dimensionless LLG}
+
+Using dimensionless parameters, the LLG can be written as
+\begin{equation}
+\begin{split}
+&\dot {\bf n}={\bf B}_{\rm eff}\times {\bf n}-\alpha {\bf n}\times \dot{\bf n}-\sum _{i=x,y}j_i{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)\\
+&{\bf B}_{\rm eff}({\bf r})=\frac{\delta H_S}{\delta {\bf n}}=-\sum _{i=x,y}\left[J({\bf r}){\bf n}({\bf r}+\delta_i)+J({\bf r}-\delta_i){\bf n}({\bf r}-\delta_i)\right]\\
+&-\sum _{i=x,y}\left[D({\bf r}){\bf n}({\bf r}+\delta_i)\times {{\bf e}}_i-D({\bf r}-\delta _i){\bf n}({\bf r}-\delta_i)\times {{\bf e}}_i\right]-{\bf B}({\bf r})-K {\bf n}({\bf r})
+\end{split}
+\end{equation}
+
+Ignoring the anisotropy term, this is as same as Eq.~(9) in Ref.~\cite{pin}.
+
+\section{\label{sec:3}Evaluation}
+
+Let ${\bf N}={\bf B}_{\rm eff}\times {\bf n}-\sum _{i=x,y}j_i{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)$, we have
+\begin{equation}
+\begin{split}
+&\dot {\bf n}={\bf N}-\alpha {\bf n}\times \dot{\bf n}
+\end{split}
+\end{equation}
+
+This is in fact a combine of $3$ equations which can be written as
+\begin{equation}
+\begin{split}
+&\frac{dn_x}{dt}=\frac{1}{1+\alpha ^2}\left(\alpha^2 n_x^2 N_x+\alpha (\alpha n_x (n_y N_y+n_z N_z)-n_y N_z+N_y n_z)+N_x\right),\ldots
+\end{split}
+\end{equation}
+
+Assuming $\alpha \ll 1$, it can be written as
+\begin{equation}
+\begin{split}
+&\frac{d{\bf n}}{dt}={\bf N}+\alpha {\bf N}\times {\bf n}+\mathcal{O}(\alpha ^2)
+\end{split}
+\end{equation}
+
+One can use this to evaluate
+\begin{equation}
+\begin{split}
+&{\bf n}(t+\Delta t)={\bf n}(t)+\Delta t \left({\bf N}(t)+\alpha {\bf N}(t)\times {\bf n}(t)\right)
+\end{split}
+\end{equation}
+
+\begin{thebibliography}{99}
+\bibliographystyle{unsrt}
+
+\bibitem{review1}
+Gen Tatara, Hiroshi Kohno, Junya Shibata, Phys. Rep. 468, 213-301 (2008), 10.1016/j.physrep.2008.07.003, arXiv:0807.2894.
+
+\bibitem{hamiton}
+Jiadong Zang, Maxim Mostovoy, Jung Hoon Han, and Naoto Nagaosa, 10.1103/PhysRevLett.107.136804.
+
+\bibitem{pin2}
+Hong Chul Choi, Shi-Zeng Lin, Jian-Xin Zhu, Phys. Rev. B 93, 115112 (2016), 10.1103/PhysRevB.93.115112, arXiv:1601.00933.
+
+\bibitem{pin}
+Ye-Hua Liu, You-Quan Li, J. Phys.: Condens. Matter 25 076005, 10.1088/0953-8984/25/7/076005, arXiv:1206.5661.
+
+\bibitem{spintransfer}
+Junichi Iwasaki, Wataru Koshibae, and Naoto Nagaosa, Nano. Lett. 2014, 14, 4432-4437, 10.1021/nl501379k.
+
+\end{thebibliography}
+
+\end{document}
+%
+% ****** End of file template.aps ******
