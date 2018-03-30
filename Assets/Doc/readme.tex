@@ -13,6 +13,8 @@
 \usepackage{appendix} % for appendix
 \usepackage{epstopdf}
 \usepackage{subfig}
+\usepackage{listings}
+\usepackage{xcolor}
 
 % \usepackage[numbers,sort&compress]{natbib} %for cite
 
@@ -218,7 +220,7 @@ In some material, the effective Hamiltonian can be written with anisotropy terms
 \begin{equation}
 \begin{split}
 &H_S=\sum _{{\bf r}}\left[-\frac{J}{a^3} ({\bf n}({\bf r}+\delta_x)+{\bf n}({\bf r}+\delta_y))-\frac{D}{a^3}  ({\bf n}({\bf r}+\delta_x)\times {{\bf e}}_x+{\bf n}({\bf r}+\delta_y)\times {{\bf e}}_y)-\frac{\mu}{a^3}{\bf B}\right.\\
-&\left.-{\bf h}-K{\bf n}({\bf r})\right]\cdot {\bf n}({\bf r})
+&\left.-{\bf h}\right]\cdot {\bf n}({\bf r})-K\left({\bf e}_z\cdot {\bf n}({\bf r})\right)^2
 \end{split}
 \end{equation}
 
@@ -231,7 +233,7 @@ Using dimensionless parameters, the LLG can be written as
 \begin{split}
 &\dot {\bf n}={\bf B}_{\rm eff}\times {\bf n}-\alpha {\bf n}\times \dot{\bf n}-\sum _{i=x,y}j_i{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)\\
 &{\bf B}_{\rm eff}({\bf r})=\frac{\delta H_S}{\delta {\bf n}}=-\sum _{i=x,y}\left[J({\bf r}){\bf n}({\bf r}+\delta_i)+J({\bf r}-\delta_i){\bf n}({\bf r}-\delta_i)\right]\\
-&-\sum _{i=x,y}\left[D({\bf r}){\bf n}({\bf r}+\delta_i)\times {{\bf e}}_i-D({\bf r}-\delta _i){\bf n}({\bf r}-\delta_i)\times {{\bf e}}_i\right]-{\bf B}({\bf r})-K {\bf n}({\bf r})
+&-\sum _{i=x,y}\left[D({\bf r}){\bf n}({\bf r}+\delta_i)\times {{\bf e}}_i-D({\bf r}-\delta _i){\bf n}({\bf r}-\delta_i)\times {{\bf e}}_i\right]-{\bf B}({\bf r})-2K \left({\bf e}_z\cdot {\bf n}({\bf r})\right){\bf e}_z
 \end{split}
 \end{equation}
 
@@ -266,6 +268,139 @@ One can use this to evaluate
 &{\bf n}(t+\Delta t)={\bf n}(t)+\Delta t \left({\bf N}(t)+\alpha {\bf N}(t)\times {\bf n}(t)\right)
 \end{split}
 \end{equation}
+
+\section{\label{sec:4}Simulation}
+
+The simulation is running on GPU using the compute shader in Unity3D. The implementation of LLG is the LLG\_c.compute, the content is
+
+\lstset{
+    numbers=left,
+    numberstyle= \tiny,
+    keywordstyle= \color{ blue!70},
+    commentstyle= \color{red!50!green!50!blue!50},
+    frame=single,
+    rulesepcolor= \color{ red!20!green!20!blue!20} ,
+    escapeinside=``,
+    xleftmargin=2em,xrightmargin=2em, aboveskip=1em,
+    framexleftmargin=2em,
+    language=c++,
+    breaklines=true,
+    columns=fullflexible,
+    captionpos=b,
+    basicstyle=\footnotesize\ttfamily,
+}
+
+\begin{lstlisting}
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+//RWStructuredBuffer<float3> magneticMomentum;
+RWTexture2D<float4> magneticMomentum;
+Texture2D<float4>  boundaryCondition;
+Texture2D<float4>  exchangeStrength;
+
+uint2 size;
+float K;
+float D;
+float B;
+float jx;
+float alpha;
+float timestep;
+
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float4 zero4 = float4(0.5f, 0.5f, 0.5f, 1.0f);
+    float3 s = magneticMomentum[id.xy].xyz;
+    float3 sleft    = id.x > 1 ? magneticMomentum[id.xy - uint2(1, 0)].xyz : zero4.xyz;
+    float3 sright   = id.x < (size.x - 1) ? magneticMomentum[id.xy + uint2(1, 0)].xyz : zero4.xyz;
+    float3 sup      = id.y > 1 ? magneticMomentum[id.xy - uint2(0, 1)].xyz : zero4.xyz;
+    float3 sdown    = id.y < (size.y - 1) ? magneticMomentum[id.xy + uint2(0, 1)].xyz : zero4.xyz;
+    s = 2.0f * (s - 0.5f);
+    sleft = 2.0f * (sleft - 0.5f);
+    sright = 2.0f * (sright - 0.5f);
+    sup = 2.0f * (sup - 0.5f);
+    sdown = 2.0f * (sdown - 0.5f);
+
+    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+
+    float j_s       = exchangeStrength[id.xy].x;
+    float j_left    = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)].x : 0.0f;
+    float j_up      = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
+
+    float3 vright    = float3(1.0, 0.0, 0.0);
+    float3 vdown     = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_up * sup + j_s * sdown)
+        + D * (cross(sright, vright) - cross(sleft, vright) + cross(sdown, vdown) - cross(sup, vdown))
+        + float3(0.0f, 0.0f, B) + 2 K * float3(0.0f, 0.0f, s.z);
+
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = newS - alpha * cross(s, newS);
+
+    float3 retColor = normalize(s + timestep * newS) * 0.5f + 0.5f;
+    magneticMomentum[id.xy] = float4(retColor.r, retColor.g, retColor.b, 1.0f) * edge + (1.0f - edge) * zero4;
+}
+\end{lstlisting}
+
+The magnetic momentum is a $512\times 512$ $64$-bit ARGB texture, only R, G, B channel used. ${\bf n}=(2 \times r - 1, 2 \times g - 1, 2 \times b - 1)$.
+
+The boundary condition is a $512\times 512$ alpha $8$-bit texture, only R channel used, when $R < 0.5$, it is a defect.
+
+The exchange strength is a $32$-bit RFloat texture, generated from a Lua script. For example, a constant exchange strength can be generated from a lua file as
+
+\lstset{
+    numbers=left,
+    numberstyle= \tiny,
+    keywordstyle= \color{ blue!70},
+    commentstyle= \color{red!50!green!50!blue!50},
+    frame=single,
+    rulesepcolor= \color{ red!20!green!20!blue!20} ,
+    escapeinside=``,
+    xleftmargin=2em,xrightmargin=2em, aboveskip=1em,
+    framexleftmargin=2em,
+    language=[5.3]Lua,
+    breaklines=true,
+    columns=fullflexible,
+    captionpos=b,
+    basicstyle=\footnotesize\ttfamily,
+}
+
+\begin{lstlisting}
+-- Exchange Strength is constant
+function GetJValueByLatticeIndex(x, y)
+    return 2.0
+end
+
+-- Need to register the function
+return {
+    GetJValueByLatticeIndex = GetJValueByLatticeIndex,
+}
+\end{lstlisting}
+
+While a pin with $J=1+\exp \left(-0.001 \rho ^2\right)$ at lattice index $(255, 255)$ can be written as
+\begin{lstlisting}
+-- Exchange Strength is pin
+function GetJValueByLatticeIndex(x, y)
+    local j0 = 1
+    local j1 = 1
+    local j2 = 0.001
+    local rho = (x - 255) * (x - 255) + (y - 255) * (y - 255)
+
+    return j0 + j1 * math.exp(-1.0 * j2 * rho)
+end
+
+-- Need to register the function
+return {
+    GetJValueByLatticeIndex = GetJValueByLatticeIndex,
+}
+\end{lstlisting}
+
+Manual.pdf is a document introduce how to use the pre-built software.
 
 \begin{thebibliography}{99}
 \bibliographystyle{unsrt}

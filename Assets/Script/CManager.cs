@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using SFB;
 using UniLua;
 using UnityEngine;
@@ -171,26 +172,59 @@ public class CManager : MonoBehaviour
             {
                 m_dtSim = DateTime.Now;
                 SimDate.text = string.Format("{0}-{1}-{2}-{3}", m_dtSim.Month, m_dtSim.Day, m_dtSim.Hour, m_dtSim.Minute);
+
+                if (m_iSaveFrame > 0)
+                {
+                    SaveBt();
+                }
             }
         }
     }
 
+#if UNITY_EDITOR
+    public static readonly string _outfolder = "/";
+#else
+    public static readonly string _outfolder = "/../";
+#endif
+
     public void LoadMagneticBt()
     {
-        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script", Application.dataPath, "lua", false);
+        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script or image", 
+            Application.dataPath + _outfolder,
+            new[] { new ExtensionFilter("Image Files", "png", "jpg", "jpeg"), new ExtensionFilter("Lua Script", "lua"), }, 
+            false);
         if (sPath.Length > 0)
         {
-            if (LoadManetic(sPath[0]))
+            if (sPath[0].Contains(".lua"))
             {
-                string sFileName = sPath[0];
-                sFileName = sFileName.Replace("\\", "/");
-                int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
-                MagButtonName.text = sFileName.Substring(iLastSlash);
-                m_bMagSet = true;
-
-                if (m_bMagSet && m_bJSet && m_bCondSet)
+                if (LoadManetic(sPath[0]))
                 {
-                    Bt.interactable = true;
+                    string sFileName = sPath[0];
+                    sFileName = sFileName.Replace("\\", "/");
+                    int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                    MagButtonName.text = sFileName.Substring(iLastSlash);
+                    m_bMagSet = true;
+
+                    if (m_bMagSet && m_bJSet && m_bCondSet)
+                    {
+                        Bt.interactable = true;
+                    }
+                }
+            }
+            else
+            {
+                if (LoadMagneticPic(sPath[0]))
+                {
+                    string sFileName = sPath[0];
+                    sFileName = sFileName.Replace("\\", "/");
+                    int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                    MagButtonName.text = sFileName.Substring(iLastSlash);
+                    m_bMagSet = true;
+
+                    if (m_bMagSet && m_bJSet && m_bCondSet)
+                    {
+                        Bt.interactable = true;
+                    }
                 }
             }
         }
@@ -198,7 +232,11 @@ public class CManager : MonoBehaviour
 
     public void LoadJValueBt()
     {
-        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script", Application.dataPath, "lua", false);
+        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script", 
+            Application.dataPath + _outfolder, 
+            "lua",
+            false);
+
         if (sPath.Length > 0)
         {
             if (LoadJValue(sPath[0]))
@@ -219,7 +257,7 @@ public class CManager : MonoBehaviour
 
     public void LoadEdgeBt()
     {
-        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the picture", Application.dataPath, new [] { new ExtensionFilter("Image Files", "png", "jpg", "jpeg")}, false);
+        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the picture", Application.dataPath + _outfolder, new [] { new ExtensionFilter("Image Files", "png", "jpg", "jpeg")}, false);
         if (sPath.Length > 0)
         {
             if (SetEdge(sPath[0]))
@@ -264,6 +302,7 @@ public class CManager : MonoBehaviour
     public void ResetBt()
     {
         m_iFrame = 0;
+        FrameCount.text = "0";
     }
 
     private static readonly Vector3[] _mags = new Vector3[512 * 512];
@@ -337,6 +376,7 @@ public class CManager : MonoBehaviour
                 if (status != ThreadStatus.LUA_OK)
                 {
                     ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
+                    return false;
                 }
 
                 //get result out
@@ -368,6 +408,40 @@ public class CManager : MonoBehaviour
         return true;
     }
 
+    private bool LoadMagneticPic(string sPicFileName)
+    {
+        if (null == m_pTestT2)
+        {
+            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+        }
+        if (!m_pTestT2.LoadImage(File.ReadAllBytes(sPicFileName), true))
+        {
+            ShowErrorMessage("Not support this file format.");
+            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            return false;
+        }
+
+        if (512 != m_pTestT2.width || 512 != m_pTestT2.height)
+        {
+            ShowErrorMessage("Only support 512 x 512 file.");
+            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            return false;
+        }
+
+        if (null == InternalRT)
+        {
+            InternalRT = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.sRGB);
+            InternalRT.enableRandomWrite = true;
+            InternalRT.Create();
+
+            OutPutSingle.texture = InternalRT;
+        }
+
+        Graphics.Blit(m_pTestT2, InternalRT);
+        CmpShader.SetTexture(m_iKernelHandle, "magneticMomentum", InternalRT);
+        return true;
+    }
+
     private void SetCurrentState(Vector3[] magnetic)
     {
         if (null == m_pTestT2)
@@ -375,12 +449,8 @@ public class CManager : MonoBehaviour
             m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
         }
 
-        //m_vMagneticData = new Vector3[512 * 512];
         for (int i = 0; i < 512 * 512; ++i)
         {
-            //m_vMagneticData[i] = new Vector3(Random.Range(-1.0f, 1.0f), Random.Range(-1.0f, 1.0f), Random.Range(-1.0f, 1.0f)).normalized;
-            //Vector3 initalV = m_vMagneticData[i] * 0.5f + 0.5f * Vector3.one;
-
             magnetic[i].Normalize();
             magnetic[i] = magnetic[i] * 0.5f + 0.5f * Vector3.one;
             _color512[i] = new Color(magnetic[i].x, magnetic[i].y, magnetic[i].z);
@@ -562,7 +632,7 @@ public class CManager : MonoBehaviour
     }
 
 
-    #region Old GUI MessageBox
+#region Old GUI MessageBox
 
     private Rect m_rcWindowRect = new Rect(Screen.width * 0.05f, Screen.height * 0.05f, Screen.width * 0.9f, Screen.height * 0.9f);
     private bool m_bMsgShow = false;
@@ -586,5 +656,5 @@ public class CManager : MonoBehaviour
         }
     }
 
-    #endregion
+#endregion
 }

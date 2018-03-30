@@ -19,21 +19,12 @@ float timestep;
 [numthreads(8, 8, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    //uint x = id.x / size.x;
-    //uint y = id.x % size.y;
-    //float3 zero3     = float3(0.0f, 0.0f, 0.0f);
-    //float3 s         = magneticMomentum[id.x];
-    //float3 sleft     = x > 1 ? magneticMomentum[y * size.x + (x - 1)] : zero3;
-    //float3 sright    = x < (size.x - 1) ? magneticMomentum[y * size.x + (x + 1)] : zero3;
-    //float3 sup       = y > 1 ? magneticMomentum[(y - 1) * size.x + x] : zero3;
-    //float3 sdown     = y < (size.y - 1) ? magneticMomentum[(y + 1) * size.x + x] : zero3;
-
-    float3 zero3 = float3(0.5f, 0.5f, 0.5f);
+    float4 zero4 = float4(0.5f, 0.5f, 0.5f, 1.0f);
     float3 s = magneticMomentum[id.xy].xyz;
-    float3 sleft    = id.x > 1 ? magneticMomentum[id.xy - uint2(1, 0)].xyz : zero3;
-    float3 sright   = id.x < (size.x - 1) ? magneticMomentum[id.xy + uint2(1, 0)].xyz : zero3;
-    float3 sup      = id.y > 1 ? magneticMomentum[id.xy - uint2(0, 1)].xyz : zero3;
-    float3 sdown    = id.y < (size.y - 1) ? magneticMomentum[id.xy + uint2(0, 1)].xyz : zero3;
+    float3 sleft    = id.x > 1 ? magneticMomentum[id.xy - uint2(1, 0)].xyz : zero4.xyz;
+    float3 sright   = id.x < (size.x - 1) ? magneticMomentum[id.xy + uint2(1, 0)].xyz : zero4.xyz;
+    float3 sup      = id.y > 1 ? magneticMomentum[id.xy - uint2(0, 1)].xyz : zero4.xyz;
+    float3 sdown    = id.y < (size.y - 1) ? magneticMomentum[id.xy + uint2(0, 1)].xyz : zero4.xyz;
     s = 2.0f * (s - 0.5f);
     sleft = 2.0f * (sleft - 0.5f);
     sright = 2.0f * (sright - 0.5f);
@@ -49,17 +40,15 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 vright    = float3(1.0, 0.0, 0.0);
     float3 vdown     = float3(0.0, 1.0, 0.0);
 
-    float3 heff = (j_left * sleft + j_s * sright + j_up * sup + j_s * sdown)
+    float3 beff = (j_left * sleft + j_s * sright + j_up * sup + j_s * sdown)
         + D * (cross(sright, vright) - cross(sleft, vright) + cross(sdown, vdown) - cross(sup, vdown))
-        + float3(0.0f, 0.0f, B) + K * s;
+        + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
 
     float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
 
-    float3 newS = cross(s, heff) + stt;
+    float3 newS = cross(s, beff) + stt;
     newS = newS - alpha * cross(s, newS);
 
-    //magneticMomentum[id.x] = normalize(s + timestep * newS);
-
-    float3 retC = normalize(s + timestep * newS) * 0.5f + 0.5f;
-    magneticMomentum[id.xy] = float4(retC.r, retC.g, retC.b, 1.0f) * edge + (1.0f - edge) * float4(0.5f, 0.5f, 0.5f, 1.0f);
+    float3 retColor = normalize(s + timestep * newS) * 0.5f + 0.5f;
+    magneticMomentum[id.xy] = float4(retColor.r, retColor.g, retColor.b, 1.0f) * edge + (1.0f - edge) * zero4;
 }

@@ -1,0 +1,65 @@
+\documentclass[aps,superscriptaddress,groupedaddress]{revtex4}  % for double-spaced preprint
+
+\usepackage{graphicx}  % needed for figures
+\usepackage{float}
+\usepackage{dcolumn}   % needed for some tables
+\usepackage{bm}        % for math
+\usepackage{amssymb}   % for math
+\usepackage{slashed}   % for Dirac Slash
+\usepackage{amsmath}   % for mutiline eqn
+\usepackage{simplewick} % for contraction
+\usepackage{verbatim}  % for multi-line comment
+\usepackage{color} % for textcolor
+\usepackage{appendix} % for appendix
+\usepackage{epstopdf}
+\usepackage{subfig}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% \usepackage[numbers,sort&compress]{natbib} %for cite
+
+% avoids incorrect hyphenation, added Nov/08 by SSR
+\hyphenation{ALPGEN}
+\hyphenation{EVTGEN}
+\hyphenation{PYTHIA}
+
+% for bookmarks
+\usepackage[bookmarks=true,colorlinks=true,linkcolor=blue,unicode=true]{hyperref}
+
+\begin{document}
+
+\widetext
+
+\title{Manual of pre-built}
+
+\date{\today}
+
+
+\begin{abstract}
+Manual of pre-built
+\end{abstract}
+
+\maketitle
+
+\section{\label{sec:1}Run simulation}
+
+Before run simulation, one have to set the exchange strength, magnetic momentum and boundary condition, using the button shown in Fig.
+\begin{figure}
+\includegraphics[scale=0.85]{intro1.png}
+\caption{\label{Fig:intro1}Set the exchange strength, magnetic momentum and boundary condition.}
+\end{figure}
+
+\section{\label{sec:2}Exchange strength}
+
+\section{\label{sec:3}Magnetic momentum}
+
+\section{\label{sec:4}Boundary condition}
+
+\section{\label{sec:5}Output}
+
+
+
+
+\end{document}
+%
+% ****** End of file template.aps ******

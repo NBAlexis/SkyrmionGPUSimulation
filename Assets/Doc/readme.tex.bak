@@ -1,4 +1,4 @@
-\documentclass[aps,preprint,showpacs,superscriptaddress,groupedaddress]{revtex4}  % for double-spaced preprint
+\documentclass[aps,superscriptaddress,groupedaddress]{revtex4}  % for double-spaced preprint
 
 \usepackage{graphicx}  % needed for figures
 \usepackage{float}
@@ -13,6 +13,8 @@
 \usepackage{appendix} % for appendix
 \usepackage{epstopdf}
 \usepackage{subfig}
+\usepackage{listings}
+\usepackage{xcolor}
 
 % \usepackage[numbers,sort&compress]{natbib} %for cite
 
@@ -30,19 +32,6 @@
 
 \title{A GPU simulation of skyrmion}
 
-\affiliation{Department of Physics, Fudan University, Shanghai 200433, China}
-%
-\author{Ji-Chong Yang} \affiliation{Department of Physics, Fudan University, Shanghai 200433, China}
-\author{Qing-Qing Mao} \affiliation{Department of Physics, Fudan University, Shanghai 200433, China}
-\author{Yu Shi} \affiliation{Department of Physics, Fudan University, Shanghai 200433, China}
-%
-% visitor_addresses.tex                        3 December 2011
-%  available symbols are:
-%  $\ast, \dag, \ddag, \S, \P, $\|$, $\ast\ast$, \dag\dag, \ddag\ddag ,\#
-%
-%
-\vskip 0.25cm
-
 \date{\today}
 
 
@@ -50,18 +39,17 @@
 A GPU simulation of skyrmion.
 \end{abstract}
 
-\pacs{75.70.Kw, 66.30.Lw, 75.10.Hk, 75.40.Mg}
 \maketitle
 
-\section{\label{sec:1}Introduction}
+\section{\label{sec:1}LLG}
 
-The Landau-Lifshitz-Gilbert-Equation~(LLG) can be written as
+The Landau-Lifshitz-Gilbert-Equation~(LLG) can be written as (Eq.~(13) of Ref.~\cite{review1} and Eq.~(7) of Ref.~\cite{hamiton}, NOTE that the sign of the last term is `+' in Eq.~(7) of Ref.~\cite{hamiton})
 \begin{equation}
 \begin{split}
 &\dot {\bf n}=\gamma {\bf B}_{\rm eff}\times {\bf n}-\frac{\alpha \gamma}{|n|} {\bf n}\times \dot{\bf n}-\frac{\hbar \gamma}{2e}\left({\bf j}\cdot {\bf \nabla}\right){\bf n}
 \end{split}
 \end{equation}
-where ${\bf n}$ is the magnetic momentum, $\gamma(\gamma > 0)$ is the gyromagnetic ratio, $\alpha$ represents Gilbert damping, ${\bf B}_{\rm eff}$ is the effective field arising from the spin Hamiltonian, and can be written as
+where ${\bf n}$ is the magnetic momentum, $\gamma(\gamma > 0)$ is the gyromagnetic ratio, $\alpha$ represents Gilbert damping, ${\bf B}_{\rm eff}$ is the effective field arising from the spin Hamiltonian, and can be written as ($H_S$ is from Ref.~\cite{hamiton}, before Eq.~(1), also Eq.~(4) in Ref.~\cite{pin2})
 \begin{equation}
 \begin{split}
 &{\bf B}_{\rm eff}\equiv \frac{\delta H_S}{\delta {\bf n}}\\
@@ -71,7 +59,7 @@ where ${\bf n}$ is the magnetic momentum, $\gamma(\gamma > 0)$ is the gyromagnet
 
 \section{\label{sec:2}LLG in 2D lattice}
 
-In the following, we use $\delta = a({\bf e}_x, {\bf e}_y)$, $\delta _x=a{\bf e}_x, \delta _y=a{\bf e}_y$, where $a$ is the distance between two lattice.
+In the following, for simplicity, we use $\delta = a({\bf e}_x, {\bf e}_y)$, $\delta _x=a{\bf e}_x, \delta _y=a{\bf e}_y$, where $a$ is the distance between two lattice.
 
 \subsection{\label{sec:2.1}Spin torque}
 Written in lattice, so that
@@ -88,7 +76,7 @@ In 2D, it is
 &=\frac{1}{a}\sum _{i=x,y}j_i\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}
 \end{split}
 \end{equation}
-Sometimes, it is also written as
+Sometimes, it is also written as (see last term in Eq.~(8) in Ref.~\cite{pin}, it also says this is the discrete version of the continuous term $({\bf j}\cdot \nabla ){\bf n}$ before Eq.~(10))
 \begin{equation}
 \begin{split}
 &\left({\bf j}\cdot \nabla\right) {\bf n}=\frac{1}{a}\sum _{i=x,y}j_i{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)
@@ -118,6 +106,13 @@ to be consist with the references, we use
 \begin{equation}
 \begin{split}
 &\left({\bf j}\cdot \nabla\right) {\bf n}=\frac{1}{a}\sum _{i=x,y}j_i{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)
+\end{split}
+\end{equation}
+
+In simulation, to simplify, we always take the direction of ${\bf j}$ as ${\bf x}$-axis, so we only have
+\begin{equation}
+\begin{split}
+&\frac{1}{a}j_x{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _x)-{\bf n}({\bf r}-\delta _x)}{2}\times {\bf n}({\bf r})\right)
 \end{split}
 \end{equation}
 
@@ -221,6 +216,16 @@ which leads to
 
 \subsection{\label{sec:2.5}anisotropy}
 
+In some material, the effective Hamiltonian can be written with anisotropy terms as (ignore $a$, this is as same as Eq.~(10) in Ref.~{spintransfer})
+\begin{equation}
+\begin{split}
+&H_S=\sum _{{\bf r}}\left[-\frac{J}{a^3} ({\bf n}({\bf r}+\delta_x)+{\bf n}({\bf r}+\delta_y))-\frac{D}{a^3}  ({\bf n}({\bf r}+\delta_x)\times {{\bf e}}_x+{\bf n}({\bf r}+\delta_y)\times {{\bf e}}_y)-\frac{\mu}{a^3}{\bf B}\right.\\
+&\left.-{\bf h}\right]\cdot {\bf n}({\bf r})-K\left({\bf e}_z\cdot {\bf n}({\bf r})\right)^2
+\end{split}
+\end{equation}
+
+The contribution of ${\bf h}$ can be just put into the applied magnetic field ${\bf B}$, we also include the contribution of $K$.
+
 \subsection{\label{sec:2.6}dimensionless LLG}
 
 Using dimensionless parameters, the LLG can be written as
@@ -228,9 +233,11 @@ Using dimensionless parameters, the LLG can be written as
 \begin{split}
 &\dot {\bf n}={\bf B}_{\rm eff}\times {\bf n}-\alpha {\bf n}\times \dot{\bf n}-\sum _{i=x,y}j_i{\bf n}({\bf r})\times \left(\frac{{\bf n}({\bf r}+\delta _i)-{\bf n}({\bf r}-\delta _i)}{2}\times {\bf n}({\bf r})\right)\\
 &{\bf B}_{\rm eff}({\bf r})=\frac{\delta H_S}{\delta {\bf n}}=-\sum _{i=x,y}\left[J({\bf r}){\bf n}({\bf r}+\delta_i)+J({\bf r}-\delta_i){\bf n}({\bf r}-\delta_i)\right]\\
-&-\sum _{i=x,y}\left[D({\bf r}){\bf n}({\bf r}+\delta_i)\times {{\bf e}}_i-D({\bf r}-\delta _i){\bf n}({\bf r}-\delta_i)\times {{\bf e}}_i\right]-{\bf B}({\bf r})
+&-\sum _{i=x,y}\left[D({\bf r}){\bf n}({\bf r}+\delta_i)\times {{\bf e}}_i-D({\bf r}-\delta _i){\bf n}({\bf r}-\delta_i)\times {{\bf e}}_i\right]-{\bf B}({\bf r})-2K \left({\bf e}_z\cdot {\bf n}({\bf r})\right){\bf e}_z
 \end{split}
 \end{equation}
+
+Ignoring the anisotropy term, this is as same as Eq.~(9) in Ref.~\cite{pin}.
 
 \section{\label{sec:3}Evaluation}
 
@@ -262,84 +269,157 @@ One can use this to evaluate
 \end{split}
 \end{equation}
 
-\section{\label{sec:4}GPU calculation}
+\section{\label{sec:4}Simulation}
+
+The simulation is running on GPU using the compute shader in Unity3D. The implementation of LLG is the LLG\_c.compute, the content is
+
+\lstset{
+    numbers=left,
+    numberstyle= \tiny,
+    keywordstyle= \color{ blue!70},
+    commentstyle= \color{red!50!green!50!blue!50},
+    frame=single,
+    rulesepcolor= \color{ red!20!green!20!blue!20} ,
+    escapeinside=``,
+    xleftmargin=2em,xrightmargin=2em, aboveskip=1em,
+    framexleftmargin=2em,
+    language=c++,
+    breaklines=true,
+    columns=fullflexible,
+    captionpos=b,
+    basicstyle=\footnotesize\ttfamily,
+}
+
+\begin{lstlisting}
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+//RWStructuredBuffer<float3> magneticMomentum;
+RWTexture2D<float4> magneticMomentum;
+Texture2D<float4>  boundaryCondition;
+Texture2D<float4>  exchangeStrength;
+
+uint2 size;
+float K;
+float D;
+float B;
+float jx;
+float alpha;
+float timestep;
+
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float4 zero4 = float4(0.5f, 0.5f, 0.5f, 1.0f);
+    float3 s = magneticMomentum[id.xy].xyz;
+    float3 sleft    = id.x > 1 ? magneticMomentum[id.xy - uint2(1, 0)].xyz : zero4.xyz;
+    float3 sright   = id.x < (size.x - 1) ? magneticMomentum[id.xy + uint2(1, 0)].xyz : zero4.xyz;
+    float3 sup      = id.y > 1 ? magneticMomentum[id.xy - uint2(0, 1)].xyz : zero4.xyz;
+    float3 sdown    = id.y < (size.y - 1) ? magneticMomentum[id.xy + uint2(0, 1)].xyz : zero4.xyz;
+    s = 2.0f * (s - 0.5f);
+    sleft = 2.0f * (sleft - 0.5f);
+    sright = 2.0f * (sright - 0.5f);
+    sup = 2.0f * (sup - 0.5f);
+    sdown = 2.0f * (sdown - 0.5f);
+
+    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+
+    float j_s       = exchangeStrength[id.xy].x;
+    float j_left    = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)].x : 0.0f;
+    float j_up      = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
+
+    float3 vright    = float3(1.0, 0.0, 0.0);
+    float3 vdown     = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_up * sup + j_s * sdown)
+        + D * (cross(sright, vright) - cross(sleft, vright) + cross(sdown, vdown) - cross(sup, vdown))
+        + float3(0.0f, 0.0f, B) + 2 K * float3(0.0f, 0.0f, s.z);
+
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = newS - alpha * cross(s, newS);
+
+    float3 retColor = normalize(s + timestep * newS) * 0.5f + 0.5f;
+    magneticMomentum[id.xy] = float4(retColor.r, retColor.g, retColor.b, 1.0f) * edge + (1.0f - edge) * zero4;
+}
+\end{lstlisting}
+
+The magnetic momentum is a $512\times 512$ $64$-bit ARGB texture, only R, G, B channel used. ${\bf n}=(2 \times r - 1, 2 \times g - 1, 2 \times b - 1)$.
+
+The boundary condition is a $512\times 512$ alpha $8$-bit texture, only R channel used, when $R < 0.5$, it is a defect.
+
+The exchange strength is a $32$-bit RFloat texture, generated from a Lua script. For example, a constant exchange strength can be generated from a lua file as
+
+\lstset{
+    numbers=left,
+    numberstyle= \tiny,
+    keywordstyle= \color{ blue!70},
+    commentstyle= \color{red!50!green!50!blue!50},
+    frame=single,
+    rulesepcolor= \color{ red!20!green!20!blue!20} ,
+    escapeinside=``,
+    xleftmargin=2em,xrightmargin=2em, aboveskip=1em,
+    framexleftmargin=2em,
+    language=[5.3]Lua,
+    breaklines=true,
+    columns=fullflexible,
+    captionpos=b,
+    basicstyle=\footnotesize\ttfamily,
+}
+
+\begin{lstlisting}
+-- Exchange Strength is constant
+function GetJValueByLatticeIndex(x, y)
+    return 2.0
+end
+
+-- Need to register the function
+return {
+    GetJValueByLatticeIndex = GetJValueByLatticeIndex,
+}
+\end{lstlisting}
+
+While a pin with $J=1+\exp \left(-0.001 \rho ^2\right)$ at lattice index $(255, 255)$ can be written as
+\begin{lstlisting}
+-- Exchange Strength is pin
+function GetJValueByLatticeIndex(x, y)
+    local j0 = 1
+    local j1 = 1
+    local j2 = 0.001
+    -- local j2 = 0.01
+    -- Center point is 255
+    -- math.sqrt((x - 255) * (x - 255) + (y - 255) * (y - 255))
+    local rho = (x - 255) * (x - 255) + (y - 255) * (y - 255)
+
+    return j0 + j1 * math.exp(-1.0 * j2 * rho)
+end
+
+-- Need to register the function
+return {
+    GetJValueByLatticeIndex = GetJValueByLatticeIndex,
+}
+\end{lstlisting}
 
 \begin{thebibliography}{99}
 \bibliographystyle{unsrt}
 
-\bibitem{Fert}
-A. Fert, N. Reyren and V. Cros, Nat. Rev. Mater. \textbf{2}, 17031 (2017).
+\bibitem{review1}
+Gen Tatara, Hiroshi Kohno, Junya Shibata, Phys. Rep. 468, 213-301 (2008), 10.1016/j.physrep.2008.07.003, arXiv:0807.2894.
 
-\bibitem{Muhlbauer}
-S. M\"{u}hlbauer et. al. Science \textbf{323}, 915 - 919 (2009).
+\bibitem{hamiton}
+Jiadong Zang, Maxim Mostovoy, Jung Hoon Han, and Naoto Nagaosa, 10.1103/PhysRevLett.107.136804.
 
-\bibitem{Yu1}
-X. Z. Yu et. al. Nature \textbf{465}, 901 - 904 (2010).
-
-\bibitem{2DSkyrmion2}
-S. Heinze et. al. Nature Phys. \textbf{7}, 713 - 718 (2011);
-
-C. Pfleiderer, Nature Phys. \textbf{7}, 673 - 674 (2011).
-
-\bibitem{ultralow}
-F. Jonietz et. al. Science \textbf{330}, 1648 - 1651 (2010), arXiv:1012.3496;
-
-X. Z. Yu et. al. Nature Commun. \textbf{3}, 988 (2012).
-
-\bibitem{Thiele}
-A. Thiele, Phys. Rev. Lett. \textbf{30}, 230 - 233 (1973).
-
-\bibitem{ThieleStudy}
-K. Everschor et. al. Phys. Rev. B \textbf{86}, 054432 (2012), arXiv:1204.5051;
-
-\bibitem{ThieleStudyAndJDB}%D/J=0.18, B/J=0.0075-0.0252
-J. Iwasaki, M. Mochizuki, and N. Nagaosa, Nat. Nanotechnol. \textbf{8}, 742 - 747, (2013),  arXiv:1310.1655;
-
-J. Iwasaki, M. Mochizuki, and N. Nagaosa, Nature Commun. \textbf{4}, 1463, (2013).
-
-\bibitem{Jiang} %Linear
-W. Jiang et. al. Nat. Phys. \textbf{13}, 162 - 169 (2016), arXiv:1603.07393.
-
-\bibitem{bilayer1}
-X. Zhang et. al. Nat. Commun. \textbf{7}, 10293 (2016), arXiv:1504.02252;
-
-\bibitem{bilayer2}
-W. Koshibae and N. Nagaosa, Sci. Rep. \textbf{7}, 42645 (2017).
-
-\bibitem{Zhang2}
-X. Zhang et. al. Sci. Rep. \textbf{6}, 24795 (2016), arXiv:1504.01198.
-
-\bibitem{NParameterAndLinear}
-A. Bogdanov and A. Hubert, J. Magn. Magn. Mater. {\bf 138} 255 (1994);
-
-A. Bogdanov and A. Hubert, J. Magn. Magn. Mater. {\bf 195} 182 (1999).
+\bibitem{pin2}
+Hong Chul Choi, Shi-Zeng Lin, Jian-Xin Zhu, Phys. Rev. B 93, 115112 (2016), 10.1103/PhysRevB.93.115112, arXiv:1601.00933.
 
 \bibitem{pin}
-Y.-H. Liu and Y.-Q. Li, J. Phys. Condens. Matter {\bf 25} 076005, arXiv:1206.5661.
+Ye-Hua Liu, You-Quan Li, J. Phys.: Condens. Matter 25 076005, 10.1088/0953-8984/25/7/076005, arXiv:1206.5661.
 
-\bibitem{thetarho} %Linear
-W. Jiang et. al. Physics Reports, {\bf 704}, 1 - 49 (2017), arXiv:1706.08295.
-
-\bibitem{arctan}
-R. Nepal, U. G\"{u}ng\"{o}rd\"{u} and A. A. Kovalev, arXiv:1711.03041.
-
-\bibitem{FreeEnergy}
-J. H. Han et. al. Phys. Rev. B {\bf 82}, 094429 (2010).
-
-\bibitem{RRMethod}
-J. K. L. MacDonald, Phys. Rev. {\bf 43} 830 (1933).
-
-\bibitem{JDBRef1} %D/J=0.09, B/J=0.002-0.006.
-M. Mochizuki, Phys. Rev. Lett. 108, 017601 (2012), arXiv:1111.5667.
-
-\bibitem{JDBRef2} %simulation, D/J=0.5, B/J=0.15-0.3.
-L. Kong and J. Zang, Phys. Rev. Lett. {\bf 111} 067203 (2013), arXiv:1308.2343.
-
-\bibitem{pade}
-S. Tokarzewski, Journal of Computational and Applied Mathematics, {\bf 75}, 2, 259 - 280 (1996).
-
-\bibitem{padeapp}
-D. J. Broadhurst, J. Fleischer and O. V. Tarasov, Z. Phys. C{\bf 60} 287 - 302  (1993), hep-ph/9304303;
+\bibitem{spintransfer}
+Junichi Iwasaki, Wataru Koshibae, and Naoto Nagaosa, Nano. Lett. 2014, 14, 4432-4437, 10.1021/nl501379k.
 
 \end{thebibliography}
 

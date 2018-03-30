@@ -18,11 +18,11 @@ public static class CExportData
     public static void Save(string sDate, int iStep, string profile, RenderTexture data, Material mat)
     {
         string sTag = sDate + "_" + iStep;
-        string sPathImag1 = Application.dataPath + "/Output/" + sTag + "_raw.png";
-        string sPathImag2 = Application.dataPath + "/Output/" + sTag + "_pic.png";
-        string sPathImag3 = Application.dataPath + "/Output/" + sTag + "_show.png";
+        string sPathImag1 = Application.dataPath + CManager._outfolder + "Output/" + sTag + "_raw.png";
+        string sPathImag2 = Application.dataPath + CManager._outfolder + "Output/" + sTag + "_pic.png";
+        string sPathImag3 = Application.dataPath + CManager._outfolder + "Output/" + sTag + "_show.png";
 
-        string sProf = Application.dataPath + "/Output/" + sTag + "_prof.txt";
+        string sProf = Application.dataPath + CManager._outfolder + "Output/" + sTag + "_prof.txt";
 
         SGetData builtRes = BuildMap(data, mat);
 
@@ -86,7 +86,7 @@ public static class CExportData
         //ny.Release();
         //nz.Release();
 
-        Texture2D retData = new Texture2D(1023, 1023, TextureFormat.RGB24, false);
+        Texture2D retData = new Texture2D(1023, 1023, TextureFormat.RGB24, false, false);
         //string sNx = "", sNy = "", sNz = "";
 
         for (int i = 0; i < 1023; ++i)
@@ -179,6 +179,7 @@ public static class CExportData
         };
     }
 
+    private static readonly Color dark = new Color(0.25f, 0.25f, 0.25f);
     private static void DrawArrow(int gridX, int gridY, int nx, int ny, Texture2D canv)
     {
         if (0 == nx && 0 == ny)
@@ -200,7 +201,7 @@ public static class CExportData
                  && iTargetY > 0
                  && iTargetY < 1023)
                 {
-                    canv.SetPixel(iTargetX, iTargetY, Color.black);
+                    canv.SetPixel(iTargetX, iTargetY, 0 == i ? Color.black : dark);
                 }
             }
         }
@@ -217,7 +218,7 @@ public static class CExportData
                  && iTargetY > 0
                  && iTargetY < 1023)
                 {
-                    canv.SetPixel(iTargetX, iTargetY, Color.black);
+                    canv.SetPixel(iTargetX, iTargetY, 0 == i ? Color.black : dark);
                 }
             }
         }
@@ -302,6 +303,89 @@ public static class CExportData
         new Color(0.9628f, 0.9373f, 0.1265f, 1.0f),
         new Color(0.9691f, 0.9606f, 0.1064f, 1.0f),
         new Color(0.9769f, 0.9839f, 0.0805f, 1.0f),
+    };
+
+    #endregion
+
+    #region Jet
+
+    private static Color GetJet(float fValue)
+    {
+        fValue = Mathf.Clamp01(1.0f - fValue);
+        int iNz = Mathf.Clamp(Mathf.RoundToInt(fValue * 63.0f * 100.0f), 0, 6299);
+        int iFloor = iNz / 100; //0 to 63
+        float interval = (iNz % 100) / 100.0f;
+        Color start = jetColors[iFloor];
+        Color end = jetColors[iFloor + 1];
+        return Color.Lerp(start, end, interval);
+    }
+
+    private static readonly Color[] jetColors = new[]
+    {
+        new Color(0.0f, 0.0f, 0.5625f, 1.0f),
+        new Color(0.0f, 0.0f, 0.6250f, 1.0f),
+        new Color(0.0f, 0.0f, 0.6875f, 1.0f),
+        new Color(0.0f, 0.0f, 0.7500f, 1.0f),
+        new Color(0.0f, 0.0f, 0.8125f, 1.0f),
+        new Color(0.0f, 0.0f, 0.8750f, 1.0f),
+        new Color(0.0f, 0.0f, 0.9375f, 1.0f),
+        new Color(0.0f, 0.0f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.0625f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.1250f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.1875f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.2500f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.3125f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.3750f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.4375f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.5000f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.5625f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.6250f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.6875f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.7500f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.8125f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.8750f, 1.0000f, 1.0f),
+        new Color(0.0f, 0.9375f, 1.0000f, 1.0f),
+        new Color(0.0f, 1.0000f, 1.0000f, 1.0f),
+        new Color(0.0625f, 1.0000f, 0.9375f, 1.0f),
+        new Color(0.1250f, 1.0000f, 0.8750f, 1.0f),
+        new Color(0.1875f, 1.0000f, 0.8125f, 1.0f),
+        new Color(0.2500f, 1.0000f, 0.7500f, 1.0f),
+        new Color(0.3125f, 1.0000f, 0.6875f, 1.0f),
+        new Color(0.3750f, 1.0000f, 0.6250f, 1.0f),
+        new Color(0.4375f, 1.0000f, 0.5625f, 1.0f),
+        new Color(0.5000f, 1.0000f, 0.5000f, 1.0f),
+        new Color(0.5625f, 1.0000f, 0.4375f, 1.0f),
+        new Color(0.6250f, 1.0000f, 0.3750f, 1.0f),
+        new Color(0.6875f, 1.0000f, 0.3125f, 1.0f),
+        new Color(0.7500f, 1.0000f, 0.2500f, 1.0f),
+        new Color(0.8125f, 1.0000f, 0.1875f, 1.0f),
+        new Color(0.8750f, 1.0000f, 0.1250f, 1.0f),
+        new Color(0.9375f, 1.0000f, 0.0625f, 1.0f),
+        new Color(1.0000f, 1.0000f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.9375f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.8750f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.8125f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.7500f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.6875f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.6250f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.5625f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.5000f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.4375f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.3750f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.3125f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.2500f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.1875f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.1250f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.0625f, 0.0f, 1.0f),
+        new Color(1.0000f, 0.0f, 0.0f, 1.0f),
+        new Color(0.9375f, 0.0f, 0.0f, 1.0f),
+        new Color(0.8750f, 0.0f, 0.0f, 1.0f),
+        new Color(0.8125f, 0.0f, 0.0f, 1.0f),
+        new Color(0.7500f, 0.0f, 0.0f, 1.0f),
+        new Color(0.6875f, 0.0f, 0.0f, 1.0f),
+        new Color(0.6250f, 0.0f, 0.0f, 1.0f),
+        new Color(0.5625f, 0.0f, 0.0f, 1.0f),
+        new Color(0.5000f, 0.0f, 0.0f, 1.0f),
     };
 
     #endregion
