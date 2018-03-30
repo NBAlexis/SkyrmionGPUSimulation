@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6500) (preloaded format=pdflatex 2018.3.31)  31 MAR 2018 02:16
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630) (preloaded format=pdflatex 2018.3.31)  31 MAR 2018 05:29
 entering extended mode
-**./readme.tex
-(readme.tex
+**F:/Unity2017WF/Skyrmion/Assets/Doc/readme.tex
+(F:/Unity2017WF/Skyrmion/Assets/Doc/readme.tex
 LaTeX2e <2017-04-15>
-Babel <3.15> and hyphenation patterns for 75 language(s) loaded.
-(D:\CTEX\UserData\tex\latex\revtex4\revtex4.cls
+Babel <3.18> and hyphenation patterns for 73 language(s) loaded.
+(D:\CTEX\MiKTeX\tex\latex\revtex4\revtex4.cls
 Document Class: revtex4 2001/08/03 v4.0 (http://publish.aps.org/revtex4/ for do
 cumentation)
  Copyright (c) 2001 The American Physical Society.
@@ -30,7 +30,7 @@ ltxgrid: portions licensed from W. E. Baxter (web@superscript.com)
 \pagegrid@col=\count82
 Class revtex4 Info: Incorporating package {textcase}  [1998/11/12 v0.06 Text on
 ly upper/lower case changing (DPC)]. on input line 3682.
-(D:\CTEX\UserData\tex\latex\url\url.sty
+(D:\CTEX\MiKTeX\tex\latex\url\url.sty
 \Urlmuskip=\muskip10
 Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 )
@@ -47,7 +47,7 @@ Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
 \c@figure=\count90
 \c@table=\count91
 
-(D:\CTEX\UserData\tex\latex\natbib\natbib.sty
+(D:\CTEX\MiKTeX\tex\latex\natbib\natbib.sty
 Package: natbib 2010/09/13 8.31b (PWD, AO)
 \bibhang=\skip43
 \bibsep=\skip44
@@ -57,16 +57,16 @@ LaTeX Info: Redefining \cite on input line 694.
 \widetext@top=\box32
 \widetext@bot=\box33
 
-(D:\CTEX\UserData\tex\latex\revtex4\revsymb.sty
+(D:\CTEX\MiKTeX\tex\latex\revtex4\revsymb.sty
 Package: revsymb 2001/08/03 v4.0 (http://publish.aps.org/revtex4/ for documenta
 tion)
 LaTeX Info: Redefining \REV@mathfrak on input line 118.
 ))
-(D:\CTEX\UserData\tex\latex\revtex4\aps.rtx
+(D:\CTEX\MiKTeX\tex\latex\revtex4\aps.rtx
 File: aps.rtx 2001/08/03 v4.0 (http://publish.aps.org/revtex4/ for documentatio
 n)
 )
-(D:\CTEX\UserData\tex\latex\revtex4\10pt.rtx
+(D:\CTEX\MiKTeX\tex\latex\revtex4\10pt.rtx
 File: 10pt.rtx 2001/08/03 v4.0 (http://publish.aps.org/revtex4/ for documentati
 on)
 )
@@ -83,13 +83,13 @@ Package: graphics 2017/06/25 v1.2c Standard LaTeX Graphics (DPC,SPQR)
 (D:\CTEX\MiKTeX\tex\latex\graphics\trig.sty
 Package: trig 2016/01/03 v1.10 sin cos tan (DPC)
 )
-(D:\CTEX\MiKTeX\tex\latex\graphics-cfg\graphics.cfg
+(D:\CTEX\UserData\tex\latex\graphics-cfg\graphics.cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
 Package graphics Info: Driver file: pdftex.def on input line 99.
 
-(D:\CTEX\MiKTeX\tex\latex\graphics-def\pdftex.def
-File: pdftex.def 2017/06/24 v1.0g Graphics/color driver for pdftex
+(D:\CTEX\UserData\tex\latex\graphics-def\pdftex.def
+File: pdftex.def 2018/01/08 v1.0l Graphics/color driver for pdftex
 ))
 \Gin@req@height=\dimen102
 \Gin@req@width=\dimen103
@@ -137,25 +137,25 @@ LaTeX Info: Redefining \Bbb on input line 113.
 (D:\CTEX\MiKTeX\tex\latex\carlisle\slashed.sty
 Package: slashed 1997/01/16 v0.01 Feynman Slashed Character Notation (DPC)
 )
-(D:\CTEX\MiKTeX\tex\latex\amsmath\amsmath.sty
+(D:\CTEX\UserData\tex\latex\amsmath\amsmath.sty
 Package: amsmath 2017/09/02 v2.17a AMS math features
 \@mathmargin=\skip47
 
 For additional information on amsmath, use the `?' option.
-(D:\CTEX\MiKTeX\tex\latex\amsmath\amstext.sty
+(D:\CTEX\UserData\tex\latex\amsmath\amstext.sty
 Package: amstext 2000/06/29 v2.01 AMS text
 
-(D:\CTEX\MiKTeX\tex\latex\amsmath\amsgen.sty
+(D:\CTEX\UserData\tex\latex\amsmath\amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks21
 \ex@=\dimen106
 ))
-(D:\CTEX\MiKTeX\tex\latex\amsmath\amsbsy.sty
+(D:\CTEX\UserData\tex\latex\amsmath\amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 LaTeX Info: Redefining \boldsymbol on input line 28.
 \pmbraise@=\dimen107
 )
-(D:\CTEX\MiKTeX\tex\latex\amsmath\amsopn.sty
+(D:\CTEX\UserData\tex\latex\amsmath\amsopn.sty
 Package: amsopn 2016/03/08 v2.02 operator names
 )
 \inf@bad=\count94
@@ -196,7 +196,7 @@ LaTeX Font Info:    Redeclaring font encoding OMS on input line 713.
 LaTeX Info: Redefining \[ on input line 2817.
 LaTeX Info: Redefining \] on input line 2818.
 )
-(D:\CTEX\UserData\tex\latex\simplewick\simplewick.sty
+(D:\CTEX\MiKTeX\tex\latex\simplewick\simplewick.sty
 Package: simplewick 2007/11/23 v1.2a
 
 Package: simplewick v1.2a (2007/11/23)
@@ -215,12 +215,12 @@ Package: verbatim 2014/10/28 v1.5q LaTeX2e package for verbatim enhancements
 (D:\CTEX\MiKTeX\tex\latex\graphics\color.sty
 Package: color 2016/07/10 v1.1e Standard LaTeX Color (DPC)
 
-(D:\CTEX\MiKTeX\tex\latex\graphics-cfg\color.cfg
+(D:\CTEX\UserData\tex\latex\graphics-cfg\color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package color Info: Driver file: pdftex.def on input line 147.
 )
-(D:\CTEX\UserData\tex\latex\appendix\appendix.sty
+(D:\CTEX\MiKTeX\tex\latex\appendix\appendix.sty
 Package: appendix 2009/09/02 v1.2b extra appendix facilities
 \c@@pps=\count106
 \c@@ppsavesec=\count107
@@ -263,7 +263,7 @@ Package etexcmds Info: Could not find \expanded.
 (etexcmds)             In the latter case, load this package earlier.
 )))
 (D:\CTEX\MiKTeX\tex\generic\oberdiek\pdftexcmds.sty
-Package: pdftexcmds 2017/03/19 v0.25 Utility functions of pdfTeX for LuaTeX (HO
+Package: pdftexcmds 2018/01/21 v0.26 Utility functions of pdfTeX for LuaTeX (HO
 )
 
 (D:\CTEX\MiKTeX\tex\generic\oberdiek\ifpdf.sty
@@ -281,13 +281,13 @@ Package grfext Info: Graphics extension search list:
 G,.JBIG2,.JB2,.eps]
 (grfext)             \AppendGraphicsExtensions on input line 456.
 ))
-(D:\CTEX\UserData\tex\latex\subfig\subfig.sty
+(D:\CTEX\MiKTeX\tex\latex\subfig\subfig.sty
 Package: subfig 2005/06/28 ver: 1.3 subfig package
 
-(D:\CTEX\UserData\tex\latex\caption\caption.sty
+(D:\CTEX\MiKTeX\tex\latex\caption\caption.sty
 Package: caption 2016/02/21 v3.3-144 Customizing captions (AR)
 
-(D:\CTEX\UserData\tex\latex\caption\caption3.sty
+(D:\CTEX\MiKTeX\tex\latex\caption\caption3.sty
 Package: caption3 2016/05/22 v1.7-166 caption3 kernel (AR)
 Package caption3 Info: TeX engine: e-TeX on input line 67.
 \captionmargin=\dimen117
@@ -326,7 +326,7 @@ Package caption Info: float package is loaded.
 \c@lotdepth=\count116
 \sf@top=\skip53
 \sf@bottom=\skip54
-) (D:\CTEX\UserData\tex\latex\listings\listings.sty
+) (D:\CTEX\MiKTeX\tex\latex\listings\listings.sty
 \lst@mode=\count117
 \lst@gtempboxa=\box42
 \lst@token=\toks28
@@ -340,21 +340,21 @@ Package caption Info: float package is loaded.
 \lst@lineno=\count122
 \lst@maxwidth=\dimen128
 
-(D:\CTEX\UserData\tex\latex\listings\lstmisc.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstmisc.sty
 File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
 \c@lstnumber=\count123
 \lst@skipnumbers=\count124
 \lst@framebox=\box43
 )
-(D:\CTEX\UserData\tex\latex\listings\listings.cfg
+(D:\CTEX\MiKTeX\tex\latex\listings\listings.cfg
 File: listings.cfg 2015/06/04 1.6 listings configuration
 ))
 Package: listings 2015/06/04 1.6 (Carsten Heinz)
 
-(D:\CTEX\UserData\tex\latex\xcolor\xcolor.sty
+(D:\CTEX\MiKTeX\tex\latex\xcolor\xcolor.sty
 Package: xcolor 2016/05/11 v2.12 LaTeX color extensions (UK)
 
-(D:\CTEX\MiKTeX\tex\latex\graphics-cfg\color.cfg
+(D:\CTEX\UserData\tex\latex\graphics-cfg\color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package xcolor Info: Driver file: pdftex.def on input line 225.
@@ -370,7 +370,7 @@ Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
 )
 (D:\CTEX\MiKTeX\tex\latex\hyperref\hyperref.sty
-Package: hyperref 2017/03/14 v6.85a Hypertext links for LaTeX
+Package: hyperref 2018/02/06 v6.86b Hypertext links for LaTeX
 
 (D:\CTEX\MiKTeX\tex\generic\oberdiek\hobsub-hyperref.sty
 Package: hobsub-hyperref 2016/05/16 v1.14 Bundle oberdiek, subset hyperref (HO)
@@ -416,51 +416,50 @@ Package: auxhook 2016/05/16 v1.4 Hooks for auxiliary files (HO)
 \Hy@pagecounter=\count126
 
 (D:\CTEX\MiKTeX\tex\latex\hyperref\pd1enc.def
-File: pd1enc.def 2017/03/14 v6.85a Hyperref: PDFDocEncoding definition (HO)
+File: pd1enc.def 2018/02/06 v6.86b Hyperref: PDFDocEncoding definition (HO)
 )
 \Hy@SavedSpaceFactor=\count127
 
 (D:\CTEX\MiKTeX\tex\latex\00miktex\hyperref.cfg
 File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
 )
-Package hyperref Info: Option `bookmarks' set `true' on input line 4374.
-Package hyperref Info: Option `colorlinks' set `true' on input line 4374.
-Package hyperref Info: Option `unicode' set `true' on input line 4374.
+Package hyperref Info: Option `bookmarks' set `true' on input line 4383.
+Package hyperref Info: Option `colorlinks' set `true' on input line 4383.
+Package hyperref Info: Option `unicode' set `true' on input line 4383.
 
 (D:\CTEX\MiKTeX\tex\latex\hyperref\puenc.def
-File: puenc.def 2017/03/14 v6.85a Hyperref: PDF Unicode definition (HO)
+File: puenc.def 2018/02/06 v6.86b Hyperref: PDF Unicode definition (HO)
 )
-Package hyperref Info: Hyper figures OFF on input line 4498.
-Package hyperref Info: Link nesting OFF on input line 4503.
-Package hyperref Info: Hyper index ON on input line 4506.
-Package hyperref Info: Plain pages OFF on input line 4513.
-Package hyperref Info: Backreferencing OFF on input line 4518.
+Package hyperref Info: Hyper figures OFF on input line 4509.
+Package hyperref Info: Link nesting OFF on input line 4514.
+Package hyperref Info: Hyper index ON on input line 4517.
+Package hyperref Info: Plain pages OFF on input line 4524.
+Package hyperref Info: Backreferencing OFF on input line 4529.
 Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
-Package hyperref Info: Bookmarks ON on input line 4751.
+Package hyperref Info: Bookmarks ON on input line 4762.
 \c@Hy@tempcnt=\count128
-LaTeX Info: Redefining \url on input line 5104.
+LaTeX Info: Redefining \url on input line 5115.
 \XeTeXLinkMargin=\dimen130
 \Fld@menulength=\count129
 \Field@Width=\dimen131
 \Fld@charsize=\dimen132
-Package hyperref Info: Hyper figures OFF on input line 6358.
-Package hyperref Info: Link nesting OFF on input line 6363.
-Package hyperref Info: Hyper index ON on input line 6366.
-Package hyperref Info: backreferencing OFF on input line 6373.
-Package hyperref Info: Link coloring ON on input line 6376.
-Package hyperref Info: Link coloring with OCG OFF on input line 6383.
-Package hyperref Info: PDF/A mode OFF on input line 6388.
-LaTeX Info: Redefining \ref on input line 6428.
-LaTeX Info: Redefining \pageref on input line 6432.
+Package hyperref Info: Hyper figures OFF on input line 6369.
+Package hyperref Info: Link nesting OFF on input line 6374.
+Package hyperref Info: Hyper index ON on input line 6377.
+Package hyperref Info: backreferencing OFF on input line 6384.
+Package hyperref Info: Link coloring ON on input line 6387.
+Package hyperref Info: Link coloring with OCG OFF on input line 6394.
+Package hyperref Info: PDF/A mode OFF on input line 6399.
+LaTeX Info: Redefining \ref on input line 6439.
+LaTeX Info: Redefining \pageref on input line 6443.
 \Hy@abspage=\count130
 \c@Item=\count131
 \c@Hfootnote=\count132
 )
-
-Package hyperref Message: Driver (autodetected): hpdftex.
+Package hyperref Info: Driver (autodetected): hpdftex.
 
 (D:\CTEX\MiKTeX\tex\latex\hyperref\hpdftex.def
-File: hpdftex.def 2017/03/14 v6.85a Hyperref driver for pdfTeX
+File: hpdftex.def 2018/02/06 v6.86b Hyperref driver for pdfTeX
 \Fld@listcount=\count133
 \c@bookmark@seq@number=\count134
 
@@ -494,7 +493,7 @@ ss! (Proceeding with fingers crossed.) on input line 29.
 Class revtex4 Info: cite was not loaded (OK!) on input line 29.
 Class revtex4 Info: multicol was not loaded (OK!) on input line 29.
 
-(D:\CTEX\UserData\tex\context\base\supp-pdf.mkii
+(D:\CTEX\MiKTeX\tex\context\base\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count135
 \scratchdimen=\dimen133
@@ -560,68 +559,61 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 47.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1{D:/CTEX/UserData/pdftex/config/pdftex.map{Unicode.sfd}{UGBK.sfd}}] [2] [3]
 
-(D:\CTEX\UserData\tex\latex\listings\lstlang1.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstlang1.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstmisc.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstmisc.sty
 File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
 ) [4]
-(D:\CTEX\UserData\tex\latex\listings\lstlang1.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstlang2.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang2.sty
 File: lstlang2.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstlang1.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstlang2.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang2.sty
 File: lstlang2.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstlang1.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstlang2.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang2.sty
 File: lstlang2.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstlang1.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
-(D:\CTEX\UserData\tex\latex\listings\lstlang2.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang2.sty
 File: lstlang2.sty 2015/06/04 1.6 listings language file
 ) [5]
-Underfull \hbox (badness 1371) in paragraph at lines 415--416
+Underfull \hbox (badness 1371) in paragraph at lines 424--425
 []\OT1/cmr/m/n/9 Hong Chul Choi, Shi-Zeng Lin, Jian-Xin Zhu, Phys. Rev. B 93, 1
-15112 (2016), 10.1103/Phys-RevB.93.115112,
+15112 (2016), 10.1103/P-hys-RevB.93.115112,
  []
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 425.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 434.
 [6]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 425.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 434.
  (readme.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 425.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 425.
-
-
-Package rerunfilecheck Warning: File `readme.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `readme.out':
-(rerunfilecheck)             Before: 7FEB434298945F3B144B4E23B9FDC69C;1551
-(rerunfilecheck)             After:  AC3915144F6BB42687194A8C85552E90;1206.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 434.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 434.
+Package rerunfilecheck Info: File `readme.out' has not changed.
+(rerunfilecheck)             Checksum: AC3915144F6BB42687194A8C85552E90;1206.
  ) 
 Here is how much of TeX's memory you used:
- 14531 strings out of 493312
- 201882 string characters out of 3144618
- 857115 words of memory out of 3000000
- 17772 multiletter control sequences out of 15000+200000
+ 14537 strings out of 493334
+ 201969 string characters out of 3145065
+ 869536 words of memory out of 3000000
+ 17767 multiletter control sequences out of 15000+200000
  9775 words of font info for 37 fonts, out of 3000000 for 9000
- 1144 hyphenation exceptions out of 8191
- 45i,17n,67p,344b,1835s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 1130 hyphenation exceptions out of 8191
+ 45i,17n,67p,377b,1835s stack positions out of 5000i,500n,10000p,200000b,50000s
 <D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><D:/CTEX/MiKTeX/fon
 ts/type1/public/amsfonts/cm/cmbx12.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfo
 nts/cm/cmbx7.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx9.pfb><D:/C
@@ -634,9 +626,9 @@ D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><D:/CTEX/MiKTeX/fonts/ty
 pe1/public/amsfonts/cm/cmsy10.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/c
 m/cmsy7.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt8.pfb><D:/CTEX/M
 iKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on readme.pdf (6 pages, 226314 bytes).
+Output written on readme.pdf (6 pages, 226914 bytes).
 PDF statistics:
- 287 PDF objects out of 1000 (max. 8388607)
- 131 named destinations out of 1000 (max. 500000)
+ 288 PDF objects out of 1000 (max. 8388607)
+ 132 named destinations out of 1000 (max. 500000)
  89 words of extra memory for PDF output out of 10000 (max. 10000000)
 
