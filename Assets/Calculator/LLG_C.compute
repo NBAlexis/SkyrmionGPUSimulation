@@ -41,7 +41,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 vdown     = float3(0.0, 1.0, 0.0);
 
     float3 beff = (j_left * sleft + j_s * sright + j_up * sup + j_s * sdown)
-        + D * (cross(sright, vright) - cross(sleft, vright) + cross(sdown, vdown) - cross(sup, vdown))
+        + D * (j_s * cross(sright, vright) - j_left * cross(sleft, vright) + j_s * cross(sdown, vdown) - j_up * cross(sup, vdown))
         + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
 
     float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));

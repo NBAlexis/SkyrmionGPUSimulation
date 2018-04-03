@@ -3599,7 +3599,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -83.670044, y: 117.80002}
+  m_AnchoredPosition: {x: -70.6, y: 117.80002}
   m_SizeDelta: {x: 57.2, y: 30.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1708554021
@@ -4586,7 +4586,7 @@ MonoBehaviour:
   m_Text: 'K=
 
 
-    D=
+    D/J=
 
 
     B=

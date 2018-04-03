@@ -282,7 +282,7 @@ public class CManager : MonoBehaviour
         string sDate = SimDate.text;
         int iStep = m_iFrame;
         CExportData.Save(sDate, iStep, 
-            string.Format("start time={0}\nstep={1}\nj value={2}\ninitla magnetic={3}\nboundary condition={4}\nK={5}\nD={6}\nB={7}\nGilbert alpha={8}\nElectric current jx={9}\ntime step={10}",
+            string.Format("start time={0}\nstep={1}\nexchange strength J value={2}\ninitla magnetic={3}\nboundary condition={4}\nK={5}\nD/J={6}\nB={7}\nGilbert alpha={8}\nElectric current jx={9}\ntime step={10}",
             m_dtSim.ToString("MM-dd-yyyy hh:mm:ss"),
             m_iFrame,
             JButtonName.text,
