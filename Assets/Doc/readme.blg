@@ -1,0 +1,9 @@
+This is BibTeX, Version 0.99dThe top-level auxiliary file: readme.aux
+I couldn't open style file apsrev.bst
+---line 54 of file readme.aux
+ : \bibstyle{apsrev
+ :                 }
+I'm skipping whatever remains of this command
+I found no \bibdata command---while reading file readme.aux
+I found no style file---while reading file readme.aux
+(There were 3 error messages)

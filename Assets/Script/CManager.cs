@@ -443,7 +443,7 @@ public class CManager : MonoBehaviour
         {
             m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
         }
-        if (!m_pTestT2.LoadImage(File.ReadAllBytes(sPicFileName), true))
+        if (!m_pTestT2.LoadImage(File.ReadAllBytes(sPicFileName), false))
         {
             ShowErrorMessage("Not support this file format.");
             m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
@@ -462,7 +462,7 @@ public class CManager : MonoBehaviour
             for (int y = 0; y < 512; ++y)
             {
                 Color c = m_pTestT2.GetPixel(x, y);
-                _mags[y*512 + x] = new Vector3(2.0f*c.r - 1.0f, 2.0f*c.g - 1.0f, 2.0f*c.g - 1.0f);
+                _mags[y*512 + x] = new Vector3(2.0f*c.r - 1.0f, 2.0f*c.g - 1.0f, 2.0f*c.b - 1.0f);
             }
         }
 

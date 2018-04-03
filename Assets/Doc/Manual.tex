@@ -72,18 +72,18 @@ The simulation can be paused at any time, when paused, all the parameters can be
 The configuration of above will generate results shown in Fig.~\ref{fig:result}.
 \begin{figure}[htb]
 \centering
-\subfloat[$step=0$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_0_show.png}}\hfill
-\subfloat[$step=30000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_30000_show.png}}\hfill
-\subfloat[$step=60000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_60000_show.png}}\hfill
-\subfloat[$step=90000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_90000_show.png}}\hfill
-\subfloat[$step=120000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_120000_show.png}}\hfill
-\subfloat[$step=150000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_150000_show.png}}\vfill
-\subfloat[$step=180000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_180000_show.png}}\hfill
-\subfloat[$step=210000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_210000_show.png}}\hfill
-\subfloat[$step=240000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_240000_show.png}}\hfill
-\subfloat[$step=270000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_270000_show.png}}\hfill
-\subfloat[$step=300000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_300000_show.png}}\hfill
-\subfloat[$step=330000$]{\includegraphics[width=0.16\textwidth]{3-31-2-28_330000_show.png}}
+\subfloat[$step=0$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_0_show.png}}\hfill
+\subfloat[$step=300000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_300000_show.png}}\hfill
+\subfloat[$step=600000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_600000_show.png}}\hfill
+\subfloat[$step=900000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_900000_show.png}}\hfill
+\subfloat[$step=1200000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_1200000_show.png}}\hfill
+\subfloat[$step=1500000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_1500000_show.png}}\vfill
+\subfloat[$step=1800000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_1800000_show.png}}\hfill
+\subfloat[$step=2100000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_2100000_show.png}}\hfill
+\subfloat[$step=2400000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_2400000_show.png}}\hfill
+\subfloat[$step=2700000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_2700000_show.png}}\hfill
+\subfloat[$step=3000000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_3000000_show.png}}\hfill
+\subfloat[$step=3300000$]{\includegraphics[width=0.16\textwidth]{4-3-15-14_3300000_show.png}}
 \caption{Results}
 \label{fig:result}
 \end{figure}
@@ -138,7 +138,7 @@ return {
 }
 \end{lstlisting}
 
-The lua files are put in 'LuaScript` sub-folder in the folder of the executable file. 
+The lua files are put in 'LuaScript` sub-folder in the folder of the executable file.
 
 \section{\label{sec:3}Magnetic momentum}
 
@@ -240,36 +240,26 @@ For example, the code
     %emph=[2]{word1,word2}, emphstyle=[2]{style},
 }
 \begin{lstlisting}
-imds = imageDatastore({'3-30-13-55_90000_raw.png'});
+imds = imageDatastore({'4-3-15-14_3300000_raw.png'});
 img = readimage(imds,1);
 
 nz=zeros(512,512);
-newc=uint8(zeros(506,506,3));
 for i=1:512
     for j=1:512
+        nx=2.0*(double(img(i,j,1))/255.0) - 1.0;
+        ny=2.0*(double(img(i,j,2))/255.0) - 1.0;
         nz(i,j)=2.0*(double(img(i,j,3))/255.0) - 1.0;
-        if i > 3 && j > 3 && i < 510 && j < 510
-            newc(i - 3, j - 3, 1) = img(i, j, 1);
-            newc(i - 3, j - 3, 2) = img(i, j, 2);
-            newc(i - 3, j - 3, 3) = img(i, j, 3);
-        end
     end
 end
 
-%apply blur to remove small points
-intImage = integralImage(nz);
-avgH = integralKernel([1 1 7 7], 1/49);
-nzblured = integralFilter(intImage, avgH);
-
-%cos(pi*exp(-0.25))
-x = 1:1:506;
-y = 1:1:506;
+x = 1:1:512;
+y = 1:1:512;
 [X,Y] = meshgrid(x,y);
-Z = nzblured;
-v = [cos(pi*exp(-0.7)),cos(pi*exp(-0.7))];
+Z = nz;
+v = [cos(pi*exp(-1.0)),cos(pi*exp(-1.0))];
 
 figure
-imshow(newc)
+imshow(img)
 hold on;
 contour(X,Y,Z,v,'linecolor','k')
 \end{lstlisting}
@@ -294,12 +284,101 @@ Electric current jx=0
 time step=0.01
 \end{lstlisting}
 
-The 'pic.png` is a illustration of the magnetic momentums. Part of it is shown in Fig.\ref{Fig:output2}
+The 'pic.png` is a illustration of the magnetic momentums. Part of it is shown in Fig.~\ref{Fig:output2}
 \begin{figure}
-\includegraphics[scale=0.5]{output2.png}
+\includegraphics[scale=0.3]{output2.png}
 \includegraphics[scale=0.5]{parula.png}
 \caption{\label{Fig:output2}Illustration of the magnetic momentums. The color shows $n_z$. The color map is 'parula` in Matlab. The small black lines show $(n_x,n_y)$.}
 \end{figure}
+
+\section{\label{sec:6}An example of simulation}
+
+\subsection{\label{sec:6.1}Start simulation}
+
+Start from random, apply a large magnetic field to bake the momentums all up, like Fig.~\ref{Fig:start} and \ref{fig:result1}.
+\begin{figure}
+\includegraphics[scale=0.3]{start.png}
+\caption{\label{Fig:start}Start simulation, $J=2.0$ is choosed.}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\subfloat[$step=0$]{\includegraphics[width=0.33\textwidth]{4-3-22-58_0_show.png}}\hfill
+\subfloat[$step=5000$]{\includegraphics[width=0.33\textwidth]{4-3-22-58_5000_show.png}}\hfill
+\subfloat[$step=10000$]{\includegraphics[width=0.33\textwidth]{4-3-22-58_10000_show.png}}\vfill
+\subfloat[$step=15000$]{\includegraphics[width=0.33\textwidth]{4-3-22-58_15000_show.png}}\hfill
+\subfloat[$step=20000$]{\includegraphics[width=0.33\textwidth]{4-3-22-58_20000_show.png}}\hfill
+\subfloat[$step=25000$]{\includegraphics[width=0.33\textwidth]{4-3-22-58_25000_show.png}}
+\caption{All point up}
+\label{fig:result1}
+\end{figure}
+
+\subsection{\label{sec:6.2}The stripes}
+
+Then, remove the magnetic field, the results are shown in Fig.~\ref{fig:result2}
+
+\begin{figure}[htb]
+\centering
+\subfloat[$step=0$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_0_show.png}}\hfill
+\subfloat[$step=100000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_100000_show.png}}\hfill
+\subfloat[$step=200000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_200000_show.png}}\hfill
+\subfloat[$step=300000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_300000_show.png}}\vfill
+\subfloat[$step=400000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_400000_show.png}}\hfill
+\subfloat[$step=500000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_500000_show.png}}\hfill
+\subfloat[$step=600000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_600000_show.png}}\hfill
+\subfloat[$step=700000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_700000_show.png}}\vfill
+\subfloat[$step=800000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_800000_show.png}}\hfill
+\subfloat[$step=900000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_900000_show.png}}\hfill
+\subfloat[$step=1000000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_1000000_show.png}}\hfill
+\subfloat[$step=1100000$]{\includegraphics[width=0.24\textwidth]{4-3-22-59_1100000_show.png}}\vfill
+\caption{Stripes}
+\label{fig:result2}
+\end{figure}
+
+\subsection{\label{sec:6.3}The skyrmions}
+
+Then, apply a small magnetic field, $B=0.1$ to see the stripes split into skyrmions as shown in Fig.~\ref{fig:result3}.
+
+\begin{figure}[htb]
+\centering
+\subfloat[$step=0$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_0_show.png}}\hfill
+\subfloat[$step=20000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_20000_show.png}}\hfill
+\subfloat[$step=40000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_40000_show.png}}\hfill
+\subfloat[$step=60000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_60000_show.png}}\vfill
+\subfloat[$step=80000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_80000_show.png}}\hfill
+\subfloat[$step=100000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_100000_show.png}}\hfill
+\subfloat[$step=120000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_120000_show.png}}\hfill
+\subfloat[$step=140000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_140000_show.png}}\vfill
+\subfloat[$step=160000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_160000_show.png}}\hfill
+\subfloat[$step=180000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_180000_show.png}}\hfill
+\subfloat[$step=200000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_200000_show.png}}\hfill
+\subfloat[$step=220000$]{\includegraphics[width=0.24\textwidth]{4-3-23-26_220000_show.png}}\vfill
+\caption{stripes split into skyrmions}
+\label{fig:result3}
+\end{figure}
+
+\subsection{\label{sec:6.4}Moving skyrmions}
+
+Then, apply a current, $j_x=1$ to see the motion of skyrmions, as shown in Fig.~\ref{fig:result4}.
+
+\begin{figure}[htb]
+\centering
+\subfloat[$step=0$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_0_show.png}}\hfill
+\subfloat[$step=20000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_20000_show.png}}\hfill
+\subfloat[$step=40000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_40000_show.png}}\hfill
+\subfloat[$step=60000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_60000_show.png}}\vfill
+\subfloat[$step=80000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_80000_show.png}}\hfill
+\subfloat[$step=100000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_100000_show.png}}\hfill
+\subfloat[$step=120000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_120000_show.png}}\hfill
+\subfloat[$step=140000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_140000_show.png}}\vfill
+\subfloat[$step=160000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_160000_show.png}}\hfill
+\subfloat[$step=180000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_180000_show.png}}\hfill
+\subfloat[$step=200000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_200000_show.png}}\hfill
+\subfloat[$step=220000$]{\includegraphics[width=0.24\textwidth]{4-3-23-29_220000_show.png}}\vfill
+\caption{Moving skyrmions}
+\label{fig:result4}
+\end{figure}
+
 
 \end{document}
 %
