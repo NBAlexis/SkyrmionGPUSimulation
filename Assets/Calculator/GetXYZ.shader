@@ -3,7 +3,10 @@
 Shader "Skyrmion/GetXYZ" {
 	Properties {
 		_MainTex    ("Magnetic momentum", 2D) = "white" {}
-        _Filter     ("Filter", Vector) = (1, 0, 0, 0)
+
+        _Nx("Nx", 2D) = "white" {}
+        _Ny("Ny", 2D) = "white" {}
+        _Nz("Nz", 2D) = "white" {}
 	}
 
 	SubShader {
@@ -24,11 +27,14 @@ Shader "Skyrmion/GetXYZ" {
 	    CGINCLUDE
 	    //#pragma multi_compile LIGHTMAP_OFF LIGHTMAP_ON
 	    //#pragma exclude_renderers molehill    
+        //#pragma fragmentoption ARB_precision_hint_nicest
 	    #include "UnityCG.cginc"
 
 	    float4 _MainTex_ST;
         uniform sampler2D _MainTex;
-        float4 _Filter;
+        sampler2D_float _Nx;
+        sampler2D_float _Ny;
+        sampler2D_float _Nz;
 
 	    struct v2f {
 		    float4 pos : SV_POSITION;
@@ -45,10 +51,9 @@ Shader "Skyrmion/GetXYZ" {
 		    return o;
 	    }
 
-        float frag(v2f i) : COLOR
+        float4 frag(v2f i) : COLOR
         {
-            float3 s = 2.0f * (tex2D(_MainTex, i.uv).rgb - 0.5f);
-            return dot(s, _Filter.xyz);
+            return 0.5f * float4(tex2D(_Nx, i.uv).r, tex2D(_Ny, i.uv).r, tex2D(_Nz, i.uv).r, 1.0f) + 0.5f;
         }
 
 	    ENDCG
@@ -57,7 +62,7 @@ Shader "Skyrmion/GetXYZ" {
 
 	    #pragma vertex vert
 	    #pragma fragment frag
-	    #pragma fragmentoption ARB_precision_hint_fastest		
+	    #pragma fragmentoption ARB_precision_hint_nicest		
 
 
 	    ENDCG

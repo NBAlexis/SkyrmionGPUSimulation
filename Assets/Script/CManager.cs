@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using SFB;
 using UniLua;
 using UnityEngine;
@@ -22,6 +21,7 @@ public class CManager : MonoBehaviour
 
     public InputField K;
     public InputField D;
+    public InputField D0;
     public InputField B;
     public InputField EJ;
     public InputField alpha;
@@ -39,7 +39,8 @@ public class CManager : MonoBehaviour
     public Button ResetButton;
     public Button SaveButton;
 
-    public Material GetXYZ;
+    public Material MatShow;
+    public Material MatGetXYZ;
 
     #endregion
 
@@ -52,7 +53,9 @@ public class CManager : MonoBehaviour
 
     #region Calculators
 
-    private RenderTexture InternalRT;
+    private RenderTexture InternalRTR;
+    private RenderTexture InternalRTG;
+    private RenderTexture InternalRTB;
     private Texture2D JTexture;
 
     #endregion
@@ -69,6 +72,9 @@ public class CManager : MonoBehaviour
     private bool m_bCondSet = false;
 
     private static readonly Color[] _color512 = new Color[512 * 512];
+
+    //private float m_fShowSep = 0.3f;
+    //private float m_fShowSepTicker = 0.0f;
 
     // Use this for initialization
     void Start ()
@@ -92,7 +98,10 @@ public class CManager : MonoBehaviour
         CmpShader.SetInts("size", new int[] { 512, 512 });
 
         Bt.GetComponentInChildren<Text>().text = "Start";
-    }
+
+        //ShowRT = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.sRGB);
+        //OutPutSingle.texture = ShowRT;
+	}
 	
 	// Update is called once per frame
 	void Update ()
@@ -104,7 +113,15 @@ public class CManager : MonoBehaviour
             ++m_iFrame;
             FrameCount.text = m_iFrame.ToString();
 
-	        if (m_iStopFrame == m_iFrame)
+	        //m_fShowSepTicker += Time.deltaTime;
+	        //if (m_fShowSepTicker > m_fShowSep)
+	        //{
+	        //    m_fShowSepTicker = 0.0f;
+         //       Graphics.Blit(null, ShowRT, GetXYZ);
+	        //}
+
+
+            if (m_iStopFrame == m_iFrame)
 	        {
 	            OnBtGo();
 	        }
@@ -126,6 +143,7 @@ public class CManager : MonoBehaviour
             Bt.GetComponentInChildren<Text>().text = "Start";
             K.interactable = true;
             D.interactable = true;
+            D0.interactable = true;
             B.interactable = true;
             EJ.interactable = true;
             alpha.interactable = true;
@@ -144,6 +162,7 @@ public class CManager : MonoBehaviour
             Bt.GetComponentInChildren<Text>().text = "Stop";
             K.interactable = false;
             D.interactable = false;
+            D0.interactable = false;
             B.interactable = false;
             EJ.interactable = false;
             alpha.interactable = false;
@@ -159,6 +178,7 @@ public class CManager : MonoBehaviour
 
             CmpShader.SetFloat("K", float.Parse(K.text));
             CmpShader.SetFloat("D", float.Parse(D.text));
+            CmpShader.SetFloat("D0", float.Parse(D0.text));
             CmpShader.SetFloat("B", float.Parse(B.text));
             CmpShader.SetFloat("jx", float.Parse(EJ.text));
             CmpShader.SetFloat("timestep", float.Parse(timestep.text));
@@ -282,7 +302,7 @@ public class CManager : MonoBehaviour
         string sDate = SimDate.text;
         int iStep = m_iFrame;
         CExportData.Save(sDate, iStep, 
-            string.Format("start time={0}\nstep={1}\nexchange strength J value={2}\ninitla magnetic={3}\nboundary condition={4}\nK={5}\nD/J={6}\nB={7}\nGilbert alpha={8}\nElectric current jx={9}\ntime step={10}",
+            string.Format("start time={0}\nstep={1}\nexchange strength J value={2}\ninitla magnetic={3}\nboundary condition={4}\nK={5}\nD={11} + J *{6}\nB={7}\nGilbert alpha={8}\nElectric current jx={9}\ntime step={10}",
             m_dtSim.ToString("MM-dd-yyyy hh:mm:ss"),
             m_iFrame,
             JButtonName.text,
@@ -293,10 +313,14 @@ public class CManager : MonoBehaviour
             B.text,
             alpha.text,
             EJ.text,
-            timestep.text
+            timestep.text,
+            D0.text
             ), 
-            InternalRT,
-            GetXYZ);
+            InternalRTR,
+            InternalRTG,
+            InternalRTB,
+            MatShow,
+            MatGetXYZ);
     }
 
     public void ResetBt()
@@ -408,6 +432,11 @@ public class CManager : MonoBehaviour
         return true;
     }
 
+    private Texture2D _txR, _txG, _txB;
+    private readonly Color[] _txcR = new Color[512 * 512];
+    private readonly Color[] _txcG = new Color[512 * 512];
+    private readonly Color[] _txcB = new Color[512 * 512];
+
     private bool LoadMagneticPic(string sPicFileName)
     {
         if (null == m_pTestT2)
@@ -428,48 +457,81 @@ public class CManager : MonoBehaviour
             return false;
         }
 
-        if (null == InternalRT)
+        for (int x = 0; x < 512; ++x)
         {
-            InternalRT = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.sRGB);
-            InternalRT.enableRandomWrite = true;
-            InternalRT.Create();
-
-            OutPutSingle.texture = InternalRT;
+            for (int y = 0; y < 512; ++y)
+            {
+                Color c = m_pTestT2.GetPixel(x, y);
+                _mags[y*512 + x] = new Vector3(2.0f*c.r - 1.0f, 2.0f*c.g - 1.0f, 2.0f*c.g - 1.0f);
+            }
         }
 
-        Graphics.Blit(m_pTestT2, InternalRT);
-        CmpShader.SetTexture(m_iKernelHandle, "magneticMomentum", InternalRT);
+        SetCurrentState(_mags);
+
         return true;
     }
 
     private void SetCurrentState(Vector3[] magnetic)
     {
-        if (null == m_pTestT2)
+        if (null == _txR)
         {
-            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            _txR = new Texture2D(512, 512, TextureFormat.RFloat, false);
+        }
+        if (null == _txG)
+        {
+            _txG = new Texture2D(512, 512, TextureFormat.RFloat, false);
+        }
+        if (null == _txB)
+        {
+            _txB = new Texture2D(512, 512, TextureFormat.RFloat, false);
         }
 
         for (int i = 0; i < 512 * 512; ++i)
         {
             magnetic[i].Normalize();
-            magnetic[i] = magnetic[i] * 0.5f + 0.5f * Vector3.one;
-            _color512[i] = new Color(magnetic[i].x, magnetic[i].y, magnetic[i].z);
+            _txcR[i] = new Color(magnetic[i].x, 0.0f, 0.0f);
+            _txcG[i] = new Color(magnetic[i].y, 0.0f, 0.0f);
+            _txcB[i] = new Color(magnetic[i].z, 0.0f, 0.0f);
         }
 
-        m_pTestT2.SetPixels(_color512);
-        m_pTestT2.Apply(false);
+        _txR.SetPixels(_txcR);
+        _txR.Apply(false);
+        _txG.SetPixels(_txcG);
+        _txG.Apply(false);
+        _txB.SetPixels(_txcB);
+        _txB.Apply(false);
 
-        if (null == InternalRT)
+        if (null == InternalRTR)
         {
-            InternalRT = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.sRGB);
-            InternalRT.enableRandomWrite = true;
-            InternalRT.Create();
-
-            OutPutSingle.texture = InternalRT;
+            InternalRTR = new RenderTexture(512, 512, 0, RenderTextureFormat.RFloat);
+            InternalRTR.enableRandomWrite = true;
+            InternalRTR.Create();
+            OutPutSingle.material.SetTexture("_Nx", InternalRTR);
+        }
+        if (null == InternalRTG)
+        {
+            InternalRTG = new RenderTexture(512, 512, 0, RenderTextureFormat.RFloat);
+            InternalRTG.enableRandomWrite = true;
+            InternalRTG.Create();
+            OutPutSingle.material.SetTexture("_Ny", InternalRTG);
+        }
+        if (null == InternalRTB)
+        {
+            InternalRTB = new RenderTexture(512, 512, 0, RenderTextureFormat.RFloat);
+            InternalRTB.enableRandomWrite = true;
+            InternalRTB.Create();
+            OutPutSingle.material.SetTexture("_Nz", InternalRTB);
         }
 
-        Graphics.Blit(m_pTestT2, InternalRT);
-        CmpShader.SetTexture(m_iKernelHandle, "magneticMomentum", InternalRT);
+        Graphics.Blit(_txR, InternalRTR);
+        Graphics.Blit(_txG, InternalRTG);
+        Graphics.Blit(_txB, InternalRTB);
+
+        CmpShader.SetTexture(m_iKernelHandle, "magneticMomentumX", InternalRTR);
+        CmpShader.SetTexture(m_iKernelHandle, "magneticMomentumY", InternalRTG);
+        CmpShader.SetTexture(m_iKernelHandle, "magneticMomentumZ", InternalRTB);
+
+        //Graphics.Blit(null, ShowRT, GetXYZ);
     }
 
     private static readonly float[] _jvalues = new float[512 * 512];

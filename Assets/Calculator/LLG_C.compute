@@ -11,6 +11,7 @@ Texture2D<float4>  exchangeStrength;
 uint2 size;
 float K;
 float D;
+float D0;
 float B;
 float jx;
 float alpha;
@@ -37,11 +38,15 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float j_left    = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)].x : 0.0f;
     float j_up      = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
 
+    float d_s       = D0 + D * j_s;
+    float d_left    = D0 + D * j_left;
+    float d_up      = D0 + D * j_up;
+
     float3 vright    = float3(1.0, 0.0, 0.0);
     float3 vdown     = float3(0.0, 1.0, 0.0);
 
     float3 beff = (j_left * sleft + j_s * sright + j_up * sup + j_s * sdown)
-        + D * (j_s * cross(sright, vright) - j_left * cross(sleft, vright) + j_s * cross(sdown, vdown) - j_up * cross(sup, vdown))
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sdown, vdown) - d_up * cross(sup, vdown))
         + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
 
     float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));

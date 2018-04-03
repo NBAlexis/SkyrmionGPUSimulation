@@ -15,7 +15,12 @@ public static class CExportData
         //public string m_sNz;
     }
 
-    public static void Save(string sDate, int iStep, string profile, RenderTexture data, Material mat)
+    public static void Save(string sDate, int iStep, string profile, 
+        RenderTexture datax,
+        RenderTexture datay,
+        RenderTexture dataz,
+        Material matShow,
+        Material matRaw)
     {
         string sTag = sDate + "_" + iStep;
         string sPathImag1 = Application.dataPath + CManager._outfolder + "Output/" + sTag + "_raw.png";
@@ -24,7 +29,7 @@ public static class CExportData
 
         string sProf = Application.dataPath + CManager._outfolder + "Output/" + sTag + "_prof.txt";
 
-        SGetData builtRes = BuildMap(data, mat);
+        SGetData builtRes = BuildMap(datax, datay, dataz, matShow, matRaw);
 
         byte[] byDataRaw = builtRes.m_txRaw.EncodeToPNG();
         File.WriteAllBytes(sPathImag1, byDataRaw);
@@ -39,10 +44,14 @@ public static class CExportData
 
     }
 
-    private static SGetData BuildMap(RenderTexture data, Material mat)
+    private static SGetData BuildMap(RenderTexture datax, RenderTexture datay, RenderTexture dataz, Material matShow, Material matRaw)
     {
         RenderTexture rt = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB32);
-        Graphics.Blit(data, rt);
+
+        matRaw.SetTexture("_Nx", datax);
+        matRaw.SetTexture("_Ny", datay);
+        matRaw.SetTexture("_Nz", dataz);
+        Graphics.Blit(null, rt, matRaw);
         Texture2D dataReader = new Texture2D(512, 512, TextureFormat.ARGB32, false);
         RenderTexture.active = rt;
         dataReader.ReadPixels(new Rect(0, 0, 512, 512), 0, 0);
@@ -51,7 +60,10 @@ public static class CExportData
         rt.Release();
 
         RenderTexture rtshow = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB32);
-        Graphics.Blit(data, rtshow, mat);
+        matShow.SetTexture("_Nx", datax);
+        matShow.SetTexture("_Ny", datay);
+        matShow.SetTexture("_Nz", dataz);
+        Graphics.Blit(null, rtshow, matShow);
         Texture2D imgShow = new Texture2D(512, 512, TextureFormat.ARGB32, false);
         RenderTexture.active = rtshow;
         imgShow.ReadPixels(new Rect(0, 0, 512, 512), 0, 0);
