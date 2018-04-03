@@ -53,5 +53,6 @@ public class PostBuildFileCopy
             File.Copy(f.FullName, sFolder + "/Doc/" + f.Name);
         }
         targetDir.CreateSubdirectory("Output");
+        File.Copy(Application.dataPath + "/Output/.gitignore", sFolder + "/Output/.gitignore");
     }
 }
