@@ -42,6 +42,8 @@ public class CManager : MonoBehaviour
     public Material MatShow;
     public Material MatGetXYZ;
 
+    public Toggle ToggleInverseNz;
+
     #endregion
 
     #region Compute Shader
@@ -70,6 +72,7 @@ public class CManager : MonoBehaviour
     private bool m_bJSet = false;
     private bool m_bMagSet = false;
     private bool m_bCondSet = false;
+    private bool m_bInverseNz = false;
 
     private static readonly Color[] _color512 = new Color[512 * 512];
 
@@ -117,9 +120,8 @@ public class CManager : MonoBehaviour
 	        //if (m_fShowSepTicker > m_fShowSep)
 	        //{
 	        //    m_fShowSepTicker = 0.0f;
-         //       Graphics.Blit(null, ShowRT, GetXYZ);
+            //    Graphics.Blit(null, ShowRT, GetXYZ);
 	        //}
-
 
             if (m_iStopFrame == m_iFrame)
 	        {
@@ -327,6 +329,13 @@ public class CManager : MonoBehaviour
     {
         m_iFrame = 0;
         FrameCount.text = "0";
+    }
+
+    public void OnInverseNz()
+    {
+        m_bInverseNz = ToggleInverseNz.isOn;
+        MatShow.SetFloat("_InverseNz", m_bInverseNz ? 1.0f : 0.0f);
+        OutPutSingle.material.SetFloat("_InverseNz", m_bInverseNz ? 1.0f : 0.0f);
     }
 
     private static readonly Vector3[] _mags = new Vector3[512 * 512];

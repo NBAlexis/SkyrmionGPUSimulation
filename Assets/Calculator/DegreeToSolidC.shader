@@ -4,6 +4,8 @@ Shader "Skyrmion/DegreeToC" {
 	Properties {
 		_MainTex    ("Base (RGB)", 2D) = "white" {}
 
+        [Toggle] _InverseNz("Inverse Nz", Float) = 0
+
         _StencilComp("Stencil Comparison", Float) = 8
         _Stencil("Stencil ID", Float) = 0
         _StencilOp("Stencil Operation", Float) = 0
@@ -55,6 +57,7 @@ Shader "Skyrmion/DegreeToC" {
 	    float4 _MainTex_ST;
         uniform sampler2D _MainTex;
         float4 _ClipRect;
+        float _InverseNz;
 
 	    struct v2f {
 		    float4 pos : SV_POSITION;
@@ -76,7 +79,7 @@ Shader "Skyrmion/DegreeToC" {
         {
             float4 c = tex2D(_MainTex, i.uv);
             float3 s = 2.0f * (c.xyz - 0.5f);
-            float fDarkness = saturate(1.0f - s.z);
+            float fDarkness = saturate(1.0f - s.z * (1.0f - _InverseNz * 2.0f));
 
             float4 retC = saturate(
                 float4( 

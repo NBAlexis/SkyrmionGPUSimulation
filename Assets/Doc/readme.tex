@@ -260,11 +260,18 @@ Let ${\bf N}={\bf B}_{\rm eff}\times {\bf n}-\sum _{i=x,y}j_i{\bf n}({\bf r})\ti
 This is in fact a combine of $3$ equations which can be written as
 \begin{equation}
 \begin{split}
-&\frac{dn_x}{dt}=\frac{1}{1+\alpha ^2}\left(\alpha^2 n_x^2 N_x+\alpha (\alpha n_x (n_y N_y+n_z N_z)-n_y N_z+N_y n_z)+N_x\right),\ldots
+&\frac{d{\bf n}}{dt}=\frac{1}{1+\alpha ^2}\\
+&\times \left(N_x+\alpha(N_yn_z-n_yN_z)+\alpha^2 n_x {\bf n}\cdot {\bf N},N_y+\alpha (n_xN_z-N_xn_z)+\alpha^2n_y{\bf n}\cdot {\bf N},N_z+\alpha(N_xn_y-n_xN_y)+\alpha^2 n_z{\bf n}\cdot {\bf N}\right)
 \end{split}
 \end{equation}
 
 Assuming $\alpha \ll 1$, it can be written as
+\begin{equation}
+\begin{split}
+&\frac{d{\bf n}}{dt}=\frac{1}{1+\alpha^2}\left({\bf N}+\alpha {\bf N}\times {\bf n}+\alpha ^2 ({\bf n}\cdot {\bf N}){\bf n}\right)
+\end{split}
+\end{equation}
+or
 \begin{equation}
 \begin{split}
 &\frac{d{\bf n}}{dt}={\bf N}+\alpha {\bf N}\times {\bf n}+\mathcal{O}(\alpha ^2)

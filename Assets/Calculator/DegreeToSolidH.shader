@@ -8,6 +8,8 @@ Shader "Skyrmion/DegreeToH" {
         _Ny("Ny", 2D) = "white" {}
         _Nz("Nz", 2D) = "white" {}
 
+        [Toggle] _InverseNz("Inverse Nz", Float) = 0
+
         _StencilComp("Stencil Comparison", Float) = 8
         _Stencil("Stencil ID", Float) = 0
         _StencilOp("Stencil Operation", Float) = 0
@@ -16,6 +18,7 @@ Shader "Skyrmion/DegreeToH" {
         _ColorMask("Color Mask", Float) = 15
 
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip("Use Alpha Clip", Float) = 0
+
 	}
 
 	SubShader {
@@ -64,6 +67,7 @@ Shader "Skyrmion/DegreeToH" {
         sampler2D_float _Ny;
         sampler2D_float _Nz;
         float4 _ClipRect;
+        float _InverseNz;
 
 	    struct v2f {
 		    float4 pos : SV_POSITION;
@@ -84,7 +88,7 @@ Shader "Skyrmion/DegreeToH" {
         float4 frag(v2f i) : COLOR
         {
             float3 s = float3(tex2D(_Nx, i.uv).r, tex2D(_Ny, i.uv).r, tex2D(_Nz, i.uv).r);
-            float fDarkness = saturate(1.0f - s.z);
+            float fDarkness = saturate(1.0f - s.z * (1.0f - _InverseNz * 2.0f));
 
             float4 retC = saturate(
                 float4( 
