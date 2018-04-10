@@ -23,7 +23,6 @@ public class CManager : MonoBehaviour
     public InputField D;
     public InputField D0;
     public InputField B;
-    public InputField EJ;
     public InputField alpha;
     public InputField timestep;
     public InputField stopstep;
@@ -32,10 +31,14 @@ public class CManager : MonoBehaviour
     public Text JButtonName;
     public Text MagButtonName;
     public Text BoundaryName;
+    public Text JxPeroidFunctionName;
 
     public Button JButton;
     public Button MagButton;
     public Button CondButton;
+    public Button JxButton;
+    public Button RemoveJxButton;
+
     public Button ResetButton;
     public Button SaveButton;
 
@@ -59,6 +62,7 @@ public class CManager : MonoBehaviour
     private RenderTexture InternalRTG;
     private RenderTexture InternalRTB;
     private Texture2D JTexture;
+    private Texture2D JxTexture;
 
     #endregion
 
@@ -73,6 +77,7 @@ public class CManager : MonoBehaviour
     private bool m_bMagSet = false;
     private bool m_bCondSet = false;
     private bool m_bInverseNz = false;
+    private bool m_bJxPeroidSet = false;
 
     private static readonly Color[] _color512 = new Color[512 * 512];
 
@@ -147,7 +152,6 @@ public class CManager : MonoBehaviour
             D.interactable = true;
             D0.interactable = true;
             B.interactable = true;
-            EJ.interactable = true;
             alpha.interactable = true;
             timestep.interactable = true;
             stopstep.interactable = true;
@@ -158,6 +162,8 @@ public class CManager : MonoBehaviour
             ResetButton.interactable = true;
             SaveButton.interactable = true;
             MagButton.interactable = true;
+            JxButton.interactable = true;
+            RemoveJxButton.interactable = true;
         }
         else
         {
@@ -166,7 +172,6 @@ public class CManager : MonoBehaviour
             D.interactable = false;
             D0.interactable = false;
             B.interactable = false;
-            EJ.interactable = false;
             alpha.interactable = false;
             timestep.interactable = false;
             stopstep.interactable = false;
@@ -177,18 +182,25 @@ public class CManager : MonoBehaviour
             ResetButton.interactable = false;
             SaveButton.interactable = false;
             MagButton.interactable = false;
+            JxButton.interactable = false;
+            RemoveJxButton.interactable = false;
 
             CmpShader.SetFloat("K", float.Parse(K.text));
             CmpShader.SetFloat("D", float.Parse(D.text));
             CmpShader.SetFloat("D0", float.Parse(D0.text));
             CmpShader.SetFloat("B", float.Parse(B.text));
-            CmpShader.SetFloat("jx", float.Parse(EJ.text));
             CmpShader.SetFloat("timestep", float.Parse(timestep.text));
             CmpShader.SetFloat("alpha", float.Parse(alpha.text));
 
             m_bRunning = true;
             m_iStopFrame = int.Parse(stopstep.text);
             m_iSaveFrame = int.Parse(savestep.text);
+
+            CmpShader.SetInt("jxstep", 0);
+            if (!m_bJxPeroidSet)
+            {
+                CmpShader.SetInt("jxperoid", 0);
+            }
 
             if (0 == m_iFrame)
             {
@@ -213,7 +225,7 @@ public class CManager : MonoBehaviour
     {
         string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script or image", 
             Application.dataPath + _outfolder,
-            new[] { new ExtensionFilter("Image Files", "png", "jpg", "jpeg"), new ExtensionFilter("Lua Script", "lua"), }, 
+            new[] { new ExtensionFilter("Lua Script", "lua"), new ExtensionFilter("Image Files", "png", "jpg", "jpeg"), }, 
             false);
         if (sPath.Length > 0)
         {
@@ -299,24 +311,61 @@ public class CManager : MonoBehaviour
         }
     }
 
+    public void LoadJXPeroidFunction()
+    {
+        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script",
+                                                            Application.dataPath + _outfolder,
+                                                            "lua",
+                                                            false);
+
+        if (sPath.Length > 0)
+        {
+            if (LoadJXValue(sPath[0]))
+            {
+                string sFileName = sPath[0];
+                sFileName = sFileName.Replace("\\", "/");
+                int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                JxPeroidFunctionName.text = sFileName.Substring(iLastSlash);
+                m_bJxPeroidSet = true;
+            }
+        }
+    }
+
+    public void RemoveJxBtFunc()
+    {
+        m_bJxPeroidSet = false;
+        JxPeroidFunctionName.text = "none";
+    }
+
     public void SaveBt()
     {
         string sDate = SimDate.text;
         int iStep = m_iFrame;
         CExportData.Save(sDate, iStep, 
-            string.Format("start time={0}\nstep={1}\nexchange strength J value={2}\ninitla magnetic={3}\nboundary condition={4}\nK={5}\nD={11} + J *{6}\nB={7}\nGilbert alpha={8}\nElectric current jx={9}\ntime step={10}",
+            string.Format(@"
+start time={0}
+step={1}
+exchange strength J value={2}
+initla magnetic={3}
+boundary condition={4}
+electrical current={5}
+K={6}
+D={7} + J * {8}
+B={9}
+Gilbert alpha={10}
+time step={11}",
             m_dtSim.ToString("MM-dd-yyyy hh:mm:ss"),
             m_iFrame,
             JButtonName.text,
             MagButtonName.text,
             BoundaryName.text,
+            JxPeroidFunctionName.text,
             K.text,
+            D0.text,
             D.text,
             B.text,
             alpha.text,
-            EJ.text,
-            timestep.text,
-            D0.text
+            timestep.text
             ), 
             InternalRTR,
             InternalRTG,
@@ -677,6 +726,167 @@ public class CManager : MonoBehaviour
         return true;
     }
 
+    private bool LoadJXValue(string sLuaFileName)
+    {
+        string sLuaCode = File.ReadAllText(sLuaFileName);
+        ILuaState luaState = LuaAPI.NewState();
+        luaState.L_OpenLibs();
+        ThreadStatus status = luaState.L_DoString(sLuaCode);
+
+        if (ThreadStatus.LUA_OK != status)
+        {
+            ShowErrorMessage("Lua file excute error.");
+            return false;
+        }
+        if (!luaState.IsTable(-1))
+        {
+            ShowErrorMessage("Lua file does not return function table.");
+            return false;
+        }
+
+        int tableIndex = luaState.GetTop();
+        luaState.PushNil();
+        List<string> funcNames = new List<string>();
+        while (luaState.Next(tableIndex))
+        {
+            if (luaState.IsString(-2) && luaState.IsFunction(-1))
+            {
+                string sFuncName = luaState.ToString(-2);
+                funcNames.Add(sFuncName);
+            }
+            luaState.Pop(1);
+        }
+
+        Dictionary<string, int> dicFunctions = new Dictionary<string, int>();
+        foreach (string funcName in funcNames)
+        {
+            luaState.GetField(-1, funcName);
+            if (!luaState.IsFunction(-1))
+            {
+                ShowErrorMessage("Lua file return a table, but the table does not return function or the name is wrong.");
+                return false;
+            }
+            int iFunctionPointer = luaState.L_Ref(LuaDef.LUA_REGISTRYINDEX);
+            dicFunctions.Add(funcName, iFunctionPointer);
+        }
+
+        luaState.Pop(1); //pop return table;
+
+        if (!dicFunctions.ContainsKey("GetJxValueInPeroid"))
+        {
+            ShowErrorMessage("GetJxValueInPeroid function not found.");
+            return false;
+        }
+
+        if (!dicFunctions.ContainsKey("GetJxPeroidLength"))
+        {
+            ShowErrorMessage("GetJxPeroidLength function not found.");
+            return false;
+        }
+
+        #region Get length
+
+        luaState.RawGetI(LuaDef.LUA_REGISTRYINDEX, dicFunctions["GetJxPeroidLength"]);
+        int oldTop1 = luaState.GetTop();
+        luaState.PushCSharpFunction(Traceback);
+        luaState.Insert(oldTop1);
+
+        //Set input
+        status = luaState.PCall(0, 1, oldTop1);
+
+        if (status != ThreadStatus.LUA_OK)
+        {
+            ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
+        }
+
+        //get result out
+        int newTop1 = luaState.GetTop();
+        if (newTop1 == oldTop1)
+        {
+            ShowErrorMessage("function should return something.");
+            return false;
+        }
+
+        int iStepLength = (int)luaState.ToNumber(oldTop1 + 1);
+
+        //if return is more then 1, pop them for next lua call
+        if (oldTop1 != luaState.GetTop())
+        {
+            luaState.Pop(luaState.GetTop() - oldTop1);
+        }
+
+        luaState.Remove(oldTop1);
+
+        #endregion
+
+        float[] jxvalue = null;
+        if (iStepLength > 0)
+        {
+            jxvalue = new float[iStepLength];
+            for (int y = 0; y < iStepLength; ++y)
+            {
+                luaState.RawGetI(LuaDef.LUA_REGISTRYINDEX, dicFunctions["GetJxValueInPeroid"]);
+                int oldTop = luaState.GetTop();
+                luaState.PushCSharpFunction(Traceback);
+                luaState.Insert(oldTop);
+
+                //Set input
+                luaState.PushNumber(y / (float)iStepLength);
+                status = luaState.PCall(1, 1, oldTop);
+
+                if (status != ThreadStatus.LUA_OK)
+                {
+                    ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
+                }
+
+                //get result out
+                int newTop = luaState.GetTop();
+                if (newTop == oldTop)
+                {
+                    ShowErrorMessage("function should return something.");
+                    return false;
+                }
+
+                jxvalue[y] = luaState.ToInteger(oldTop + 1);
+
+                //if return is more then 1, pop them for next lua call
+                if (oldTop != luaState.GetTop())
+                {
+                    luaState.Pop(luaState.GetTop() - oldTop);
+                }
+
+                luaState.Remove(oldTop);
+            }
+        }
+
+        SetJXTexture(iStepLength, jxvalue);
+        return true;
+    }
+
+    private void SetJXTexture(int jxStep, float[] jxValue)
+    {
+        if (jxStep < 1 || null == jxValue || 0 == jxValue.Length)
+        {
+            CmpShader.SetInt("jxperoid", 0);
+            return;
+        }
+
+        if (null == JxTexture || JxTexture.width != jxStep)
+        {
+            JxTexture = new Texture2D(jxStep, 1, TextureFormat.RFloat, false);
+        }
+
+        Color[] jxcolors = new Color[jxStep];
+        for (int i = 0; i < jxStep; ++i)
+        {
+            jxcolors[i] = new Color(jxValue[i], 0.0f, 0.0f);
+        }
+        JxTexture.SetPixels(jxcolors);
+        JxTexture.Apply(false);
+        CmpShader.SetInt("jxperoid", jxStep);
+        CmpShader.SetTexture(m_iKernelHandle, "jxPeroidFunction", JxTexture);
+    }
+
     private static int Traceback(ILuaState lua)
     {
         var msg = lua.ToString(1);
@@ -701,7 +911,6 @@ public class CManager : MonoBehaviour
         m_sMessage = sMsg;
         m_bMsgShow = true;
     }
-
 
 #region Old GUI MessageBox
 

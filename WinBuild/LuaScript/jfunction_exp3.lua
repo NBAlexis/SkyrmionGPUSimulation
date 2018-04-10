@@ -1,7 +1,7 @@
 -- Exchange Strength is pin
 function GetJValueByLatticeIndex(x, y)
     local j0 = 1
-    local j1 = -0.8
+    local j1 = 10
 
     -- pin radus ~ 1 / sqrt(j2), this is a about 30 in a 512 x 512 lattice
     local j2 = 0.0004

@@ -10,15 +10,17 @@ RWTexture2D<float4> magneticMomentumZ;
 
 Texture2D<float4>  boundaryCondition;
 Texture2D<float4>  exchangeStrength;
+Texture2D<float4>  jxPeroidFunction;
 
 uint2 size;
 float K;
 float D;
 float D0;
 float B;
-float jx;
 float alpha;
 float timestep;
+uint jxstep;
+uint jxperoid;
 
 [numthreads(8, 8, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
@@ -39,8 +41,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float j_up      = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
 
     float d_s       = D0 + D * j_s;
-    float d_left    = D0 + D * j_left;
-    float d_up      = D0 + D * j_up;
+    float d_left    = id.x > 1 ? (D0 + D * j_left) : 0.0f;
+    float d_up      = id.y > 1 ? (D0 + D * j_up) : 0.0f;
 
     float3 vright    = float3(1.0, 0.0, 0.0);
     float3 vdown     = float3(0.0, 1.0, 0.0);
@@ -49,14 +51,16 @@ void CSMain (uint3 id : SV_DispatchThreadID)
         + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sdown, vdown) - d_up * cross(sup, vdown))
         + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
 
+    jxstep++;
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2(jxstep % jxperoid, 0)].x : 0.0f;
     float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
 
     float3 newS = cross(s, beff) + stt;
     newS = (newS - alpha * cross(s, newS) + alpha * alpha * dot(s, newS) * s) / (1 + alpha * alpha);
 
-    float3 retColor = normalize(s + timestep * newS);
+    float3 retColor = edge < 0.5f ? zero3 : normalize(s + timestep * newS);
 
-    magneticMomentumX[id.xy] = float4(retColor.r * edge, 0.0f, 0.0f, 1.0f);
-    magneticMomentumY[id.xy] = float4(retColor.g * edge, 0.0f, 0.0f, 1.0f);
-    magneticMomentumZ[id.xy] = float4(retColor.b * edge, 0.0f, 0.0f, 1.0f);
+    magneticMomentumX[id.xy] = float4(retColor.x * edge, 0.0f, 0.0f, 1.0f);
+    magneticMomentumY[id.xy] = float4(retColor.y * edge, 0.0f, 0.0f, 1.0f);
+    magneticMomentumZ[id.xy] = float4(retColor.z * edge, 0.0f, 0.0f, 1.0f);
 }

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630) (preloaded format=pdflatex 2018.3.31)  3 APR 2018 23:48
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630) (preloaded format=pdflatex 2018.3.31)  10 APR 2018 18:36
 entering extended mode
 **F:/Unity2017WF/Skyrmion/Assets/Doc/Manual.tex
 (F:/Unity2017WF/Skyrmion/Assets/Doc/Manual.tex
@@ -558,80 +558,80 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 46.
 (D:\CTEX\MiKTeX\tex\latex\amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-<intro1.png, id=44, 1029.8475pt x 804.00375pt>
+<intro1.png, id=48, 1029.8475pt x 804.00375pt>
 File: intro1.png Graphic file (type png)
 <use intro1.png>
 Package pdftex.def Info: intro1.png  used on input line 50.
 (pdftex.def)             Requested size: 308.95663pt x 241.20299pt.
-<intro2.png, id=49, 1029.8475pt x 804.00375pt>
+<intro2.png, id=54, 1029.8475pt x 804.00375pt>
 File: intro2.png Graphic file (type png)
 <use intro2.png>
-Package pdftex.def Info: intro2.png  used on input line 62.
+Package pdftex.def Info: intro2.png  used on input line 64.
 (pdftex.def)             Requested size: 308.95663pt x 241.20299pt.
-<intro3.png, id=53, 1029.8475pt x 804.00375pt>
+<intro3.png, id=58, 1029.8475pt x 804.00375pt>
 File: intro3.png Graphic file (type png)
 <use intro3.png>
-Package pdftex.def Info: intro3.png  used on input line 68.
+Package pdftex.def Info: intro3.png  used on input line 70.
 (pdftex.def)             Requested size: 308.95663pt x 241.20299pt.
-<4-3-15-14_0_show.png, id=55, 513.92pt x 513.92pt>
+<4-3-15-14_0_show.png, id=60, 513.92pt x 513.92pt>
 File: 4-3-15-14_0_show.png Graphic file (type png)
 <use 4-3-15-14_0_show.png>
-Package pdftex.def Info: 4-3-15-14_0_show.png  used on input line 75.
+Package pdftex.def Info: 4-3-15-14_0_show.png  used on input line 77.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_300000_show.png, id=57, 513.92pt x 513.92pt>
+<4-3-15-14_300000_show.png, id=62, 513.92pt x 513.92pt>
 File: 4-3-15-14_300000_show.png Graphic file (type png)
 <use 4-3-15-14_300000_show.png>
-Package pdftex.def Info: 4-3-15-14_300000_show.png  used on input line 76.
+Package pdftex.def Info: 4-3-15-14_300000_show.png  used on input line 78.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_600000_show.png, id=58, 513.92pt x 513.92pt>
+<4-3-15-14_600000_show.png, id=63, 513.92pt x 513.92pt>
 File: 4-3-15-14_600000_show.png Graphic file (type png)
 <use 4-3-15-14_600000_show.png>
-Package pdftex.def Info: 4-3-15-14_600000_show.png  used on input line 77.
+Package pdftex.def Info: 4-3-15-14_600000_show.png  used on input line 79.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_900000_show.png, id=59, 513.92pt x 513.92pt>
+<4-3-15-14_900000_show.png, id=64, 513.92pt x 513.92pt>
 File: 4-3-15-14_900000_show.png Graphic file (type png)
 <use 4-3-15-14_900000_show.png>
-Package pdftex.def Info: 4-3-15-14_900000_show.png  used on input line 78.
+Package pdftex.def Info: 4-3-15-14_900000_show.png  used on input line 80.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_1200000_show.png, id=60, 513.92pt x 513.92pt>
+<4-3-15-14_1200000_show.png, id=65, 513.92pt x 513.92pt>
 File: 4-3-15-14_1200000_show.png Graphic file (type png)
 <use 4-3-15-14_1200000_show.png>
-Package pdftex.def Info: 4-3-15-14_1200000_show.png  used on input line 79.
+Package pdftex.def Info: 4-3-15-14_1200000_show.png  used on input line 81.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_1500000_show.png, id=61, 513.92pt x 513.92pt>
+<4-3-15-14_1500000_show.png, id=66, 513.92pt x 513.92pt>
 File: 4-3-15-14_1500000_show.png Graphic file (type png)
 <use 4-3-15-14_1500000_show.png>
-Package pdftex.def Info: 4-3-15-14_1500000_show.png  used on input line 80.
+Package pdftex.def Info: 4-3-15-14_1500000_show.png  used on input line 82.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_1800000_show.png, id=62, 513.92pt x 513.92pt>
+<4-3-15-14_1800000_show.png, id=67, 513.92pt x 513.92pt>
 File: 4-3-15-14_1800000_show.png Graphic file (type png)
 <use 4-3-15-14_1800000_show.png>
-Package pdftex.def Info: 4-3-15-14_1800000_show.png  used on input line 81.
+Package pdftex.def Info: 4-3-15-14_1800000_show.png  used on input line 83.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_2100000_show.png, id=63, 513.92pt x 513.92pt>
+<4-3-15-14_2100000_show.png, id=68, 513.92pt x 513.92pt>
 File: 4-3-15-14_2100000_show.png Graphic file (type png)
 <use 4-3-15-14_2100000_show.png>
-Package pdftex.def Info: 4-3-15-14_2100000_show.png  used on input line 82.
+Package pdftex.def Info: 4-3-15-14_2100000_show.png  used on input line 84.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_2400000_show.png, id=64, 513.92pt x 513.92pt>
+<4-3-15-14_2400000_show.png, id=69, 513.92pt x 513.92pt>
 File: 4-3-15-14_2400000_show.png Graphic file (type png)
 <use 4-3-15-14_2400000_show.png>
-Package pdftex.def Info: 4-3-15-14_2400000_show.png  used on input line 83.
+Package pdftex.def Info: 4-3-15-14_2400000_show.png  used on input line 85.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_2700000_show.png, id=65, 513.92pt x 513.92pt>
+<4-3-15-14_2700000_show.png, id=70, 513.92pt x 513.92pt>
 File: 4-3-15-14_2700000_show.png Graphic file (type png)
 <use 4-3-15-14_2700000_show.png>
-Package pdftex.def Info: 4-3-15-14_2700000_show.png  used on input line 84.
+Package pdftex.def Info: 4-3-15-14_2700000_show.png  used on input line 86.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_3000000_show.png, id=66, 513.92pt x 513.92pt>
+<4-3-15-14_3000000_show.png, id=71, 513.92pt x 513.92pt>
 File: 4-3-15-14_3000000_show.png Graphic file (type png)
 <use 4-3-15-14_3000000_show.png>
-Package pdftex.def Info: 4-3-15-14_3000000_show.png  used on input line 85.
+Package pdftex.def Info: 4-3-15-14_3000000_show.png  used on input line 87.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
-<4-3-15-14_3300000_show.png, id=67, 513.92pt x 513.92pt>
+<4-3-15-14_3300000_show.png, id=72, 513.92pt x 513.92pt>
 File: 4-3-15-14_3300000_show.png Graphic file (type png)
 <use 4-3-15-14_3300000_show.png>
-Package pdftex.def Info: 4-3-15-14_3300000_show.png  used on input line 86.
+Package pdftex.def Info: 4-3-15-14_3300000_show.png  used on input line 88.
 (pdftex.def)             Requested size: 81.60187pt x 81.60153pt.
 
 (D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
@@ -664,298 +664,299 @@ png> <./4-3-15-14_900000_show.png> <./4-3-15-14_1200000_show.png> <./4-3-15-14_
 1500000_show.png> <./4-3-15-14_1800000_show.png> <./4-3-15-14_2100000_show.png>
  <./4-3-15-14_2400000_show.png> <./4-3-15-14_2700000_show.png> <./4-3-15-14_300
 0000_show.png> <./4-3-15-14_3300000_show.png>]
-<boundary.png, id=170, 613.29124pt x 221.82875pt>
+<boundary.png, id=174, 613.29124pt x 221.82875pt>
 File: boundary.png Graphic file (type png)
 <use boundary.png>
-Package pdftex.def Info: boundary.png  used on input line 208.
+Package pdftex.def Info: boundary.png  used on input line 210.
 (pdftex.def)             Requested size: 306.64487pt x 110.9141pt.
-<intro4.png, id=172, 1451.4225pt x 719.68875pt>
+ [4 <./boundary.png (PNG copy)>]
+<intro4.png, id=209, 1451.4225pt x 719.68875pt>
 File: intro4.png Graphic file (type png)
 <use intro4.png>
-Package pdftex.def Info: intro4.png  used on input line 218.
+Package pdftex.def Info: intro4.png  used on input line 281.
 (pdftex.def)             Requested size: 725.70949pt x 359.84349pt.
-<output1.png, id=173, 534.99875pt x 179.67125pt>
+<output1.png, id=210, 534.99875pt x 179.67125pt>
 File: output1.png Graphic file (type png)
 <use output1.png>
-Package pdftex.def Info: output1.png  used on input line 219.
+Package pdftex.def Info: output1.png  used on input line 282.
 (pdftex.def)             Requested size: 267.49872pt x 89.83539pt.
 
-Overfull \hbox (215.70949pt too wide) in paragraph at lines 218--220
+Overfull \hbox (215.70949pt too wide) in paragraph at lines 281--283
  [][] 
  []
 
 
-Underfull \hbox (badness 2512) in paragraph at lines 216--222
+Underfull \hbox (badness 2512) in paragraph at lines 279--285
 []\OT1/cmr/m/n/10 Whenever the save but-ton is pressed or the au-tosave is trig
 -gered, there will be $4$ files gen-er-ated,
  []
 
-[4 <./boundary.png (PNG copy)>] (D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
+(D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
-) [5 <./intro4.png (PNG copy)> <./output1.png (PNG copy)>]
-<edges.png, id=225, 525.46312pt x 470.50781pt>
+) [5]
+<edges.png, id=261, 525.46312pt x 470.50781pt>
 File: edges.png Graphic file (type png)
 <use edges.png>
-Package pdftex.def Info: edges.png  used on input line 268.
+Package pdftex.def Info: edges.png  used on input line 331.
 (pdftex.def)             Requested size: 262.73091pt x 235.25333pt.
-<output2.png, id=227, 1323.94624pt x 764.8575pt>
+ [6 <./intro4.png (PNG copy)> <./output1.png (PNG copy)>]
+<output2.png, id=284, 1323.94624pt x 764.8575pt>
 File: output2.png Graphic file (type png)
 <use output2.png>
-Package pdftex.def Info: output2.png  used on input line 289.
+Package pdftex.def Info: output2.png  used on input line 352.
 (pdftex.def)             Requested size: 397.18694pt x 229.45901pt.
-<parula.png, id=228, 789.95125pt x 72.27pt>
+<parula.png, id=285, 789.95125pt x 72.27pt>
 File: parula.png Graphic file (type png)
 <use parula.png>
-Package pdftex.def Info: parula.png  used on input line 290.
+Package pdftex.def Info: parula.png  used on input line 353.
 (pdftex.def)             Requested size: 394.97466pt x 36.1349pt.
-<start.png, id=231, 1029.8475pt x 804.00375pt>
+<start.png, id=288, 1029.8475pt x 804.00375pt>
 File: start.png Graphic file (type png)
 <use start.png>
-Package pdftex.def Info: start.png  used on input line 300.
+Package pdftex.def Info: start.png  used on input line 363.
 (pdftex.def)             Requested size: 308.95663pt x 241.20299pt.
-<4-3-22-58_0_show.png, id=232, 513.92pt x 513.92pt>
+<4-3-22-58_0_show.png, id=289, 513.92pt x 513.92pt>
 File: 4-3-22-58_0_show.png Graphic file (type png)
 <use 4-3-22-58_0_show.png>
-Package pdftex.def Info: 4-3-22-58_0_show.png  used on input line 306.
+Package pdftex.def Info: 4-3-22-58_0_show.png  used on input line 369.
 (pdftex.def)             Requested size: 168.30093pt x 168.30022pt.
-<4-3-22-58_5000_show.png, id=233, 513.92pt x 513.92pt>
+<4-3-22-58_5000_show.png, id=290, 513.92pt x 513.92pt>
 File: 4-3-22-58_5000_show.png Graphic file (type png)
 <use 4-3-22-58_5000_show.png>
-Package pdftex.def Info: 4-3-22-58_5000_show.png  used on input line 307.
+Package pdftex.def Info: 4-3-22-58_5000_show.png  used on input line 370.
 (pdftex.def)             Requested size: 168.30093pt x 168.30022pt.
-<4-3-22-58_10000_show.png, id=234, 513.92pt x 513.92pt>
+<4-3-22-58_10000_show.png, id=291, 513.92pt x 513.92pt>
 File: 4-3-22-58_10000_show.png Graphic file (type png)
 <use 4-3-22-58_10000_show.png>
-Package pdftex.def Info: 4-3-22-58_10000_show.png  used on input line 308.
+Package pdftex.def Info: 4-3-22-58_10000_show.png  used on input line 371.
 (pdftex.def)             Requested size: 168.30093pt x 168.30022pt.
-<4-3-22-58_15000_show.png, id=235, 513.92pt x 513.92pt>
+<4-3-22-58_15000_show.png, id=292, 513.92pt x 513.92pt>
 File: 4-3-22-58_15000_show.png Graphic file (type png)
 <use 4-3-22-58_15000_show.png>
-Package pdftex.def Info: 4-3-22-58_15000_show.png  used on input line 309.
+Package pdftex.def Info: 4-3-22-58_15000_show.png  used on input line 372.
 (pdftex.def)             Requested size: 168.30093pt x 168.30022pt.
-<4-3-22-58_20000_show.png, id=236, 513.92pt x 513.92pt>
+<4-3-22-58_20000_show.png, id=293, 513.92pt x 513.92pt>
 File: 4-3-22-58_20000_show.png Graphic file (type png)
 <use 4-3-22-58_20000_show.png>
-Package pdftex.def Info: 4-3-22-58_20000_show.png  used on input line 310.
+Package pdftex.def Info: 4-3-22-58_20000_show.png  used on input line 373.
 (pdftex.def)             Requested size: 168.30093pt x 168.30022pt.
-<4-3-22-58_25000_show.png, id=237, 513.92pt x 513.92pt>
+<4-3-22-58_25000_show.png, id=294, 513.92pt x 513.92pt>
 File: 4-3-22-58_25000_show.png Graphic file (type png)
 <use 4-3-22-58_25000_show.png>
-Package pdftex.def Info: 4-3-22-58_25000_show.png  used on input line 311.
+Package pdftex.def Info: 4-3-22-58_25000_show.png  used on input line 374.
 (pdftex.def)             Requested size: 168.30093pt x 168.30022pt.
-<4-3-22-59_0_show.png, id=239, 513.92pt x 513.92pt>
+<4-3-22-59_0_show.png, id=296, 513.92pt x 513.92pt>
 File: 4-3-22-59_0_show.png Graphic file (type png)
 <use 4-3-22-59_0_show.png>
-Package pdftex.def Info: 4-3-22-59_0_show.png  used on input line 322.
+Package pdftex.def Info: 4-3-22-59_0_show.png  used on input line 385.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_100000_show.png, id=240, 513.92pt x 513.92pt>
+<4-3-22-59_100000_show.png, id=297, 513.92pt x 513.92pt>
 File: 4-3-22-59_100000_show.png Graphic file (type png)
 <use 4-3-22-59_100000_show.png>
-Package pdftex.def Info: 4-3-22-59_100000_show.png  used on input line 323.
+Package pdftex.def Info: 4-3-22-59_100000_show.png  used on input line 386.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_200000_show.png, id=241, 513.92pt x 513.92pt>
+<4-3-22-59_200000_show.png, id=298, 513.92pt x 513.92pt>
 File: 4-3-22-59_200000_show.png Graphic file (type png)
 <use 4-3-22-59_200000_show.png>
-Package pdftex.def Info: 4-3-22-59_200000_show.png  used on input line 324.
+Package pdftex.def Info: 4-3-22-59_200000_show.png  used on input line 387.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_300000_show.png, id=242, 513.92pt x 513.92pt>
+<4-3-22-59_300000_show.png, id=299, 513.92pt x 513.92pt>
 File: 4-3-22-59_300000_show.png Graphic file (type png)
 <use 4-3-22-59_300000_show.png>
-Package pdftex.def Info: 4-3-22-59_300000_show.png  used on input line 325.
+Package pdftex.def Info: 4-3-22-59_300000_show.png  used on input line 388.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_400000_show.png, id=243, 513.92pt x 513.92pt>
+<4-3-22-59_400000_show.png, id=300, 513.92pt x 513.92pt>
 File: 4-3-22-59_400000_show.png Graphic file (type png)
 <use 4-3-22-59_400000_show.png>
-Package pdftex.def Info: 4-3-22-59_400000_show.png  used on input line 326.
+Package pdftex.def Info: 4-3-22-59_400000_show.png  used on input line 389.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_500000_show.png, id=244, 513.92pt x 513.92pt>
+<4-3-22-59_500000_show.png, id=301, 513.92pt x 513.92pt>
 File: 4-3-22-59_500000_show.png Graphic file (type png)
 <use 4-3-22-59_500000_show.png>
-Package pdftex.def Info: 4-3-22-59_500000_show.png  used on input line 327.
+Package pdftex.def Info: 4-3-22-59_500000_show.png  used on input line 390.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_600000_show.png, id=245, 513.92pt x 513.92pt>
+<4-3-22-59_600000_show.png, id=302, 513.92pt x 513.92pt>
 File: 4-3-22-59_600000_show.png Graphic file (type png)
 <use 4-3-22-59_600000_show.png>
-Package pdftex.def Info: 4-3-22-59_600000_show.png  used on input line 328.
+Package pdftex.def Info: 4-3-22-59_600000_show.png  used on input line 391.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_700000_show.png, id=246, 513.92pt x 513.92pt>
+<4-3-22-59_700000_show.png, id=303, 513.92pt x 513.92pt>
 File: 4-3-22-59_700000_show.png Graphic file (type png)
 <use 4-3-22-59_700000_show.png>
-Package pdftex.def Info: 4-3-22-59_700000_show.png  used on input line 329.
+Package pdftex.def Info: 4-3-22-59_700000_show.png  used on input line 392.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_800000_show.png, id=247, 513.92pt x 513.92pt>
+<4-3-22-59_800000_show.png, id=304, 513.92pt x 513.92pt>
 File: 4-3-22-59_800000_show.png Graphic file (type png)
 <use 4-3-22-59_800000_show.png>
-Package pdftex.def Info: 4-3-22-59_800000_show.png  used on input line 330.
+Package pdftex.def Info: 4-3-22-59_800000_show.png  used on input line 393.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_900000_show.png, id=248, 513.92pt x 513.92pt>
+<4-3-22-59_900000_show.png, id=305, 513.92pt x 513.92pt>
 File: 4-3-22-59_900000_show.png Graphic file (type png)
 <use 4-3-22-59_900000_show.png>
-Package pdftex.def Info: 4-3-22-59_900000_show.png  used on input line 331.
+Package pdftex.def Info: 4-3-22-59_900000_show.png  used on input line 394.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_1000000_show.png, id=249, 513.92pt x 513.92pt>
+<4-3-22-59_1000000_show.png, id=306, 513.92pt x 513.92pt>
 File: 4-3-22-59_1000000_show.png Graphic file (type png)
 <use 4-3-22-59_1000000_show.png>
-Package pdftex.def Info: 4-3-22-59_1000000_show.png  used on input line 332.
+Package pdftex.def Info: 4-3-22-59_1000000_show.png  used on input line 395.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-22-59_1100000_show.png, id=250, 513.92pt x 513.92pt>
+<4-3-22-59_1100000_show.png, id=307, 513.92pt x 513.92pt>
 File: 4-3-22-59_1100000_show.png Graphic file (type png)
 <use 4-3-22-59_1100000_show.png>
-Package pdftex.def Info: 4-3-22-59_1100000_show.png  used on input line 333.
+Package pdftex.def Info: 4-3-22-59_1100000_show.png  used on input line 396.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_0_show.png, id=252, 513.92pt x 513.92pt>
+<4-3-23-26_0_show.png, id=309, 513.92pt x 513.92pt>
 File: 4-3-23-26_0_show.png Graphic file (type png)
 <use 4-3-23-26_0_show.png>
-Package pdftex.def Info: 4-3-23-26_0_show.png  used on input line 344.
+Package pdftex.def Info: 4-3-23-26_0_show.png  used on input line 407.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_20000_show.png, id=253, 513.92pt x 513.92pt>
+<4-3-23-26_20000_show.png, id=310, 513.92pt x 513.92pt>
 File: 4-3-23-26_20000_show.png Graphic file (type png)
 <use 4-3-23-26_20000_show.png>
-Package pdftex.def Info: 4-3-23-26_20000_show.png  used on input line 345.
+Package pdftex.def Info: 4-3-23-26_20000_show.png  used on input line 408.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_40000_show.png, id=254, 513.92pt x 513.92pt>
+<4-3-23-26_40000_show.png, id=311, 513.92pt x 513.92pt>
 File: 4-3-23-26_40000_show.png Graphic file (type png)
 <use 4-3-23-26_40000_show.png>
-Package pdftex.def Info: 4-3-23-26_40000_show.png  used on input line 346.
+Package pdftex.def Info: 4-3-23-26_40000_show.png  used on input line 409.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_60000_show.png, id=255, 513.92pt x 513.92pt>
+<4-3-23-26_60000_show.png, id=312, 513.92pt x 513.92pt>
 File: 4-3-23-26_60000_show.png Graphic file (type png)
 <use 4-3-23-26_60000_show.png>
-Package pdftex.def Info: 4-3-23-26_60000_show.png  used on input line 347.
+Package pdftex.def Info: 4-3-23-26_60000_show.png  used on input line 410.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_80000_show.png, id=256, 513.92pt x 513.92pt>
+<4-3-23-26_80000_show.png, id=313, 513.92pt x 513.92pt>
 File: 4-3-23-26_80000_show.png Graphic file (type png)
 <use 4-3-23-26_80000_show.png>
-Package pdftex.def Info: 4-3-23-26_80000_show.png  used on input line 348.
+Package pdftex.def Info: 4-3-23-26_80000_show.png  used on input line 411.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_100000_show.png, id=257, 513.92pt x 513.92pt>
+<4-3-23-26_100000_show.png, id=314, 513.92pt x 513.92pt>
 File: 4-3-23-26_100000_show.png Graphic file (type png)
 <use 4-3-23-26_100000_show.png>
-Package pdftex.def Info: 4-3-23-26_100000_show.png  used on input line 349.
+Package pdftex.def Info: 4-3-23-26_100000_show.png  used on input line 412.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_120000_show.png, id=258, 513.92pt x 513.92pt>
+<4-3-23-26_120000_show.png, id=315, 513.92pt x 513.92pt>
 File: 4-3-23-26_120000_show.png Graphic file (type png)
 <use 4-3-23-26_120000_show.png>
-Package pdftex.def Info: 4-3-23-26_120000_show.png  used on input line 350.
+Package pdftex.def Info: 4-3-23-26_120000_show.png  used on input line 413.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_140000_show.png, id=259, 513.92pt x 513.92pt>
+<4-3-23-26_140000_show.png, id=316, 513.92pt x 513.92pt>
 File: 4-3-23-26_140000_show.png Graphic file (type png)
 <use 4-3-23-26_140000_show.png>
-Package pdftex.def Info: 4-3-23-26_140000_show.png  used on input line 351.
+Package pdftex.def Info: 4-3-23-26_140000_show.png  used on input line 414.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_160000_show.png, id=260, 513.92pt x 513.92pt>
+<4-3-23-26_160000_show.png, id=317, 513.92pt x 513.92pt>
 File: 4-3-23-26_160000_show.png Graphic file (type png)
 <use 4-3-23-26_160000_show.png>
-Package pdftex.def Info: 4-3-23-26_160000_show.png  used on input line 352.
+Package pdftex.def Info: 4-3-23-26_160000_show.png  used on input line 415.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_180000_show.png, id=261, 513.92pt x 513.92pt>
+<4-3-23-26_180000_show.png, id=318, 513.92pt x 513.92pt>
 File: 4-3-23-26_180000_show.png Graphic file (type png)
 <use 4-3-23-26_180000_show.png>
-Package pdftex.def Info: 4-3-23-26_180000_show.png  used on input line 353.
+Package pdftex.def Info: 4-3-23-26_180000_show.png  used on input line 416.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_200000_show.png, id=262, 513.92pt x 513.92pt>
+<4-3-23-26_200000_show.png, id=319, 513.92pt x 513.92pt>
 File: 4-3-23-26_200000_show.png Graphic file (type png)
 <use 4-3-23-26_200000_show.png>
-Package pdftex.def Info: 4-3-23-26_200000_show.png  used on input line 354.
+Package pdftex.def Info: 4-3-23-26_200000_show.png  used on input line 417.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-26_220000_show.png, id=263, 513.92pt x 513.92pt>
+<4-3-23-26_220000_show.png, id=320, 513.92pt x 513.92pt>
 File: 4-3-23-26_220000_show.png Graphic file (type png)
 <use 4-3-23-26_220000_show.png>
-Package pdftex.def Info: 4-3-23-26_220000_show.png  used on input line 355.
+Package pdftex.def Info: 4-3-23-26_220000_show.png  used on input line 418.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
- [6 <./edges.png (PNG copy)>]
-<4-3-23-29_0_show.png, id=294, 513.92pt x 513.92pt>
+<4-3-23-29_0_show.png, id=322, 513.92pt x 513.92pt>
 File: 4-3-23-29_0_show.png Graphic file (type png)
 <use 4-3-23-29_0_show.png>
-Package pdftex.def Info: 4-3-23-29_0_show.png  used on input line 366.
+Package pdftex.def Info: 4-3-23-29_0_show.png  used on input line 429.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_20000_show.png, id=295, 513.92pt x 513.92pt>
+<4-3-23-29_20000_show.png, id=323, 513.92pt x 513.92pt>
 File: 4-3-23-29_20000_show.png Graphic file (type png)
 <use 4-3-23-29_20000_show.png>
-Package pdftex.def Info: 4-3-23-29_20000_show.png  used on input line 367.
+Package pdftex.def Info: 4-3-23-29_20000_show.png  used on input line 430.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_40000_show.png, id=296, 513.92pt x 513.92pt>
+<4-3-23-29_40000_show.png, id=324, 513.92pt x 513.92pt>
 File: 4-3-23-29_40000_show.png Graphic file (type png)
 <use 4-3-23-29_40000_show.png>
-Package pdftex.def Info: 4-3-23-29_40000_show.png  used on input line 368.
+Package pdftex.def Info: 4-3-23-29_40000_show.png  used on input line 431.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_60000_show.png, id=297, 513.92pt x 513.92pt>
+<4-3-23-29_60000_show.png, id=325, 513.92pt x 513.92pt>
 File: 4-3-23-29_60000_show.png Graphic file (type png)
 <use 4-3-23-29_60000_show.png>
-Package pdftex.def Info: 4-3-23-29_60000_show.png  used on input line 369.
+Package pdftex.def Info: 4-3-23-29_60000_show.png  used on input line 432.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_80000_show.png, id=298, 513.92pt x 513.92pt>
+<4-3-23-29_80000_show.png, id=326, 513.92pt x 513.92pt>
 File: 4-3-23-29_80000_show.png Graphic file (type png)
 <use 4-3-23-29_80000_show.png>
-Package pdftex.def Info: 4-3-23-29_80000_show.png  used on input line 370.
+Package pdftex.def Info: 4-3-23-29_80000_show.png  used on input line 433.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_100000_show.png, id=299, 513.92pt x 513.92pt>
+<4-3-23-29_100000_show.png, id=327, 513.92pt x 513.92pt>
 File: 4-3-23-29_100000_show.png Graphic file (type png)
 <use 4-3-23-29_100000_show.png>
-Package pdftex.def Info: 4-3-23-29_100000_show.png  used on input line 371.
+Package pdftex.def Info: 4-3-23-29_100000_show.png  used on input line 434.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_120000_show.png, id=300, 513.92pt x 513.92pt>
+<4-3-23-29_120000_show.png, id=328, 513.92pt x 513.92pt>
 File: 4-3-23-29_120000_show.png Graphic file (type png)
 <use 4-3-23-29_120000_show.png>
-Package pdftex.def Info: 4-3-23-29_120000_show.png  used on input line 372.
+Package pdftex.def Info: 4-3-23-29_120000_show.png  used on input line 435.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_140000_show.png, id=301, 513.92pt x 513.92pt>
+<4-3-23-29_140000_show.png, id=329, 513.92pt x 513.92pt>
 File: 4-3-23-29_140000_show.png Graphic file (type png)
 <use 4-3-23-29_140000_show.png>
-Package pdftex.def Info: 4-3-23-29_140000_show.png  used on input line 373.
+Package pdftex.def Info: 4-3-23-29_140000_show.png  used on input line 436.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_160000_show.png, id=302, 513.92pt x 513.92pt>
+<4-3-23-29_160000_show.png, id=330, 513.92pt x 513.92pt>
 File: 4-3-23-29_160000_show.png Graphic file (type png)
 <use 4-3-23-29_160000_show.png>
-Package pdftex.def Info: 4-3-23-29_160000_show.png  used on input line 374.
+Package pdftex.def Info: 4-3-23-29_160000_show.png  used on input line 437.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_180000_show.png, id=303, 513.92pt x 513.92pt>
+<4-3-23-29_180000_show.png, id=331, 513.92pt x 513.92pt>
 File: 4-3-23-29_180000_show.png Graphic file (type png)
 <use 4-3-23-29_180000_show.png>
-Package pdftex.def Info: 4-3-23-29_180000_show.png  used on input line 375.
+Package pdftex.def Info: 4-3-23-29_180000_show.png  used on input line 438.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_200000_show.png, id=304, 513.92pt x 513.92pt>
+<4-3-23-29_200000_show.png, id=332, 513.92pt x 513.92pt>
 File: 4-3-23-29_200000_show.png Graphic file (type png)
 <use 4-3-23-29_200000_show.png>
-Package pdftex.def Info: 4-3-23-29_200000_show.png  used on input line 376.
+Package pdftex.def Info: 4-3-23-29_200000_show.png  used on input line 439.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
-<4-3-23-29_220000_show.png, id=305, 513.92pt x 513.92pt>
+<4-3-23-29_220000_show.png, id=333, 513.92pt x 513.92pt>
 File: 4-3-23-29_220000_show.png Graphic file (type png)
 <use 4-3-23-29_220000_show.png>
-Package pdftex.def Info: 4-3-23-29_220000_show.png  used on input line 377.
+Package pdftex.def Info: 4-3-23-29_220000_show.png  used on input line 440.
 (pdftex.def)             Requested size: 122.4028pt x 122.4023pt.
- [7 <./output2.png (PNG copy)> <./parula.png (PNG copy)> <./start.png (PNG copy
+ [7 <./edges.png (PNG copy)>]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 446.
+ [8 <./output2.png (PNG copy)> <./parula.png (PNG copy)> <./start.png (PNG copy
 )>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 383.
- [8 <./4-3-22-58_0_show.png> <./4-3-22-58_5000_show.png> <./4-3-22-58_10000_sho
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 446.
+ [9 <./4-3-22-58_0_show.png> <./4-3-22-58_5000_show.png> <./4-3-22-58_10000_sho
 w.png> <./4-3-22-58_15000_show.png> <./4-3-22-58_20000_show.png> <./4-3-22-58_2
 5000_show.png>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 383.
- [9 <./4-3-22-59_0_show.png> <./4-3-22-59_100000_show.png> <./4-3-22-59_200000_
+[10 <./4-3-22-59_0_show.png> <./4-3-22-59_100000_show.png> <./4-3-22-59_200000_
 show.png> <./4-3-22-59_300000_show.png> <./4-3-22-59_400000_show.png> <./4-3-22
 -59_500000_show.png> <./4-3-22-59_600000_show.png> <./4-3-22-59_700000_show.png
 > <./4-3-22-59_800000_show.png> <./4-3-22-59_900000_show.png> <./4-3-22-59_1000
-000_show.png> <./4-3-22-59_1100000_show.png>]
-[10 <./4-3-23-26_0_show.png> <./4-3-23-26_20000_show.png> <./4-3-23-26_40000_sh
-ow.png> <./4-3-23-26_60000_show.png> <./4-3-23-26_80000_show.png> <./4-3-23-26_
-100000_show.png> <./4-3-23-26_120000_show.png> <./4-3-23-26_140000_show.png> <.
-/4-3-23-26_160000_show.png> <./4-3-23-26_180000_show.png> <./4-3-23-26_200000_s
-how.png> <./4-3-23-26_220000_show.png>] [11 <./4-3-23-29_0_show.png> <./4-3-23-
-29_20000_show.png> <./4-3-23-29_40000_show.png> <./4-3-23-29_60000_show.png> <.
-/4-3-23-29_80000_show.png> <./4-3-23-29_100000_show.png> <./4-3-23-29_120000_sh
-ow.png> <./4-3-23-29_140000_show.png> <./4-3-23-29_160000_show.png> <./4-3-23-2
-9_180000_show.png> <./4-3-23-29_200000_show.png> <./4-3-23-29_220000_show.png>]
-(Manual.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 383.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 383.
+000_show.png> <./4-3-22-59_1100000_show.png>] [11 <./4-3-23-26_0_show.png> <./4
+-3-23-26_20000_show.png> <./4-3-23-26_40000_show.png> <./4-3-23-26_60000_show.p
+ng> <./4-3-23-26_80000_show.png> <./4-3-23-26_100000_show.png> <./4-3-23-26_120
+000_show.png> <./4-3-23-26_140000_show.png> <./4-3-23-26_160000_show.png> <./4-
+3-23-26_180000_show.png> <./4-3-23-26_200000_show.png> <./4-3-23-26_220000_show
+.png>] [12 <./4-3-23-29_0_show.png> <./4-3-23-29_20000_show.png> <./4-3-23-29_4
+0000_show.png> <./4-3-23-29_60000_show.png> <./4-3-23-29_80000_show.png> <./4-3
+-23-29_100000_show.png> <./4-3-23-29_120000_show.png> <./4-3-23-29_140000_show.
+png> <./4-3-23-29_160000_show.png> <./4-3-23-29_180000_show.png> <./4-3-23-29_2
+00000_show.png> <./4-3-23-29_220000_show.png>] (Manual.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 446.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 446.
 Package rerunfilecheck Info: File `Manual.out' has not changed.
-(rerunfilecheck)             Checksum: 8AB380EB094EF6F2456805003004AC6B;1285.
+(rerunfilecheck)             Checksum: 4528B4C2FF5554423ADAF4CE3087031B;1468.
  ) 
 Here is how much of TeX's memory you used:
- 15384 strings out of 493310
- 216045 string characters out of 3144686
- 482576 words of memory out of 3000000
- 18486 multiletter control sequences out of 15000+200000
+ 15431 strings out of 493310
+ 216712 string characters out of 3144686
+ 521688 words of memory out of 3000000
+ 18491 multiletter control sequences out of 15000+200000
  14425 words of font info for 54 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
  45i,11n,67p,600b,2274s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -970,9 +971,9 @@ amsfonts/cm/cmr7.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><D
 :/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><D:/CTEX/MiKTeX/fonts/typ
 e1/public/amsfonts/cm/cmsy10.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm
 /cmtt8.pfb>
-Output written on Manual.pdf (11 pages, 29004598 bytes).
+Output written on Manual.pdf (12 pages, 29016123 bytes).
 PDF statistics:
- 499 PDF objects out of 1000 (max. 8388607)
- 194 named destinations out of 1000 (max. 500000)
- 401 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 558 PDF objects out of 1000 (max. 8388607)
+ 236 named destinations out of 1000 (max. 500000)
+ 409 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -57,6 +57,8 @@ The magnetic momentum can be either a lua script or a image file introduced in S
 
 The boundary condition is a image file introduced in Sec.~\ref{sec:4}.
 
+The electric current is a lua script introduced Sec.~\ref{sec:5}.
+
 Then set the parameters as shown in Fig.~\ref{Fig:intro2}.
 \begin{figure}
 \includegraphics[scale=0.3]{intro2.png}
@@ -209,7 +211,68 @@ There are $4$ common boundary condition files in 'BoundConditions` sub-folder in
 \caption{\label{Fig:boundary}Boundary conditions.}
 \end{figure}
 
-\section{\label{sec:5}Output}
+\section{\label{sec:5}Applied electrical current}
+
+One can apply a constant, or period electrical current. When electrical current is applied, the direction of the current is chose to x-axis, so there is only $j_x$.
+
+The electrical current is configured using a lua script for example
+\begin{lstlisting}
+-- Applied electrical current
+-- The direction of X-Axis is defined as the direction of electrical current so only jx is applied
+-- Need two functions:
+
+-- t from 0 to 1
+function GetJxValueInPeroid(t)
+    return 1.0
+end
+
+-- the length of the peroid (steps)
+function GetJxPeroidLength()
+    return 1
+end
+
+-- Need to register the function
+return {
+    GetJxValueInPeroid = GetJxValueInPeroid,
+    GetJxPeroidLength = GetJxPeroidLength,
+}
+\end{lstlisting}
+
+Note that, there must be 2 functions:
+
+(i) 'GetJxPeroidLength` is a function return an integer to set the length of the period of the $j_x$ function, note that the unit is 'steps`. If 'GetJxPeroidLength` return a number smaller then 1, it is equivalent as no electric current.
+
+(ii) 'GetJxValueInPeroid` is a function return the value of $j_x$ when $time=t T$, where $T$ is period, $t$ is a float number $\in [0,1)$.
+
+
+For example a period electric current can be applied as
+\begin{lstlisting}
+-- Applied electrical current
+-- The direction of X-Axis is defined as the direction of electrical current so only jx is applied
+-- Need two functions:
+
+-- t from 0 to 1
+function GetJxValueInPeroid(t)
+    return math.sin(2.0 * math.pi * t)
+end
+
+-- the length of the peroid (steps)
+function GetJxPeroidLength()
+    return 10000
+end
+
+-- Need to register the function
+return {
+    GetJxValueInPeroid = GetJxValueInPeroid,
+    GetJxPeroidLength = GetJxPeroidLength,
+}
+\end{lstlisting}
+
+If the time step is set to be $0.001$, the actual period is $10000$ steps, thus the actual period is $10000 \times 0.001 = 10$, so this is to apply a $j_x(t)=\sin (2\pi \times 10 \times t)$.
+
+
+
+\section{\label{sec:6}Output}
 
 The output files are put in 'Output` sub-folder in the folder of the executable file.
 
@@ -291,9 +354,9 @@ The 'pic.png` is a illustration of the magnetic momentums. Part of it is shown i
 \caption{\label{Fig:output2}Illustration of the magnetic momentums. The color shows $n_z$. The color map is 'parula` in Matlab. The small black lines show $(n_x,n_y)$.}
 \end{figure}
 
-\section{\label{sec:6}An example of simulation}
+\section{\label{sec:7}An example of simulation}
 
-\subsection{\label{sec:6.1}Start simulation}
+\subsection{\label{sec:7.1}Start simulation}
 
 Start from random, apply a large magnetic field to bake the momentums all up, like Fig.~\ref{Fig:start} and \ref{fig:result1}.
 \begin{figure}
@@ -313,7 +376,7 @@ Start from random, apply a large magnetic field to bake the momentums all up, li
 \label{fig:result1}
 \end{figure}
 
-\subsection{\label{sec:6.2}The stripes}
+\subsection{\label{sec:7.2}The stripes}
 
 Then, remove the magnetic field, the results are shown in Fig.~\ref{fig:result2}
 
@@ -335,7 +398,7 @@ Then, remove the magnetic field, the results are shown in Fig.~\ref{fig:result2}
 \label{fig:result2}
 \end{figure}
 
-\subsection{\label{sec:6.3}The skyrmions}
+\subsection{\label{sec:7.3}The skyrmions}
 
 Then, apply a small magnetic field, $B=0.1$ to see the stripes split into skyrmions as shown in Fig.~\ref{fig:result3}.
 
@@ -357,7 +420,7 @@ Then, apply a small magnetic field, $B=0.1$ to see the stripes split into skyrmi
 \label{fig:result3}
 \end{figure}
 
-\subsection{\label{sec:6.4}Moving skyrmions}
+\subsection{\label{sec:7.4}Moving skyrmions}
 
 Then, apply a current, $j_x=1$ to see the motion of skyrmions, as shown in Fig.~\ref{fig:result4}.
 
