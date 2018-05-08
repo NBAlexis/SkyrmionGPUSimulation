@@ -56,7 +56,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
 
     float3 newS = cross(s, beff) + stt;
-    newS = (newS - alpha * cross(s, newS) + alpha * alpha * dot(s, newS) * s) / (1 + alpha * alpha);
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
 
     float3 retColor = edge < 0.5f ? zero3 : normalize(s + timestep * newS);
 
