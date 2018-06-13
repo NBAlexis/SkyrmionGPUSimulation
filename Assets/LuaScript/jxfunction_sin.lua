@@ -12,8 +12,3 @@ function GetJxPeroidLength()
     return 10000
 end
 
--- Need to register the function
-return { 
-    GetJxValueInPeroid = GetJxValueInPeroid,
-    GetJxPeroidLength = GetJxPeroidLength,
-}

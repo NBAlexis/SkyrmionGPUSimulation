@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using LuaInterface;
 using SFB;
-using UniLua;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -109,7 +108,7 @@ public class CManager : MonoBehaviour
 
         //ShowRT = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.sRGB);
         //OutPutSingle.texture = ShowRT;
-	}
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -199,7 +198,7 @@ public class CManager : MonoBehaviour
             CmpShader.SetInt("jxstep", 0);
             if (!m_bJxPeroidSet)
             {
-                CmpShader.SetInt("jxperoid", 0);
+                SetJXTexture(0, null);
             }
 
             if (0 == m_iFrame)
@@ -223,11 +222,19 @@ public class CManager : MonoBehaviour
 
     public void LoadMagneticBt()
     {
+#if alsonotworkinIL2CPP
+        string[] sPath = WinDialog.OpenFile(
+            "Choose the script or image",
+            Application.dataPath + _outfolder,
+            "lua files (*.lua)\0*.lua\0png files(*.png)\0*.png\0jpg files(*.jpg)\0*.jpg\0\0"
+            );
+#else
         string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script or image", 
             Application.dataPath + _outfolder,
             new[] { new ExtensionFilter("Lua Script", "lua"), new ExtensionFilter("Image Files", "png", "jpg", "jpeg"), }, 
             false);
-        if (sPath.Length > 0)
+#endif
+        if (sPath.Length > 0 && !string.IsNullOrEmpty(sPath[0]))
         {
             if (sPath[0].Contains(".lua"))
             {
@@ -388,56 +395,17 @@ time step={11}",
     }
 
     private static readonly Vector3[] _mags = new Vector3[512 * 512];
-    private static readonly float[] _mag_ret = new float[3];
     private bool LoadManetic(string sLuaFileName)
     {
+        Util.ClearMemory();
         string sLuaCode = File.ReadAllText(sLuaFileName);
-        ILuaState luaState = LuaAPI.NewState();
-        luaState.L_OpenLibs();
-        ThreadStatus status = luaState.L_DoString(sLuaCode);
-
-        if (ThreadStatus.LUA_OK != status)
+        LuaScriptMgr mgr = new LuaScriptMgr();
+        mgr.DoString(sLuaCode);
+        LuaFunction func = mgr.GetLuaFunction("GetMagneticByLatticeIndex");
+        if (null == func)
         {
-            ShowErrorMessage("Lua file excute error.");
-            return false;
-        }
-        if (!luaState.IsTable(-1))
-        {
-            ShowErrorMessage("Lua file does not return function table.");
-            return false;
-        }
-
-        int tableIndex = luaState.GetTop();
-        luaState.PushNil();
-        List<string> funcNames = new List<string>();
-        while (luaState.Next(tableIndex))
-        {
-            if (luaState.IsString(-2) && luaState.IsFunction(-1))
-            {
-                string sFuncName = luaState.ToString(-2);
-                funcNames.Add(sFuncName);
-            }
-            luaState.Pop(1);
-        }
-
-        Dictionary<string, int> dicFunctions = new Dictionary<string, int>();
-        foreach (string funcName in funcNames)
-        {
-            luaState.GetField(-1, funcName);
-            if (!luaState.IsFunction(-1))
-            {
-                ShowErrorMessage("Lua file return a table, but the table does not return function or the name is wrong.");
-                return false;
-            }
-            int iFunctionPointer = luaState.L_Ref(LuaDef.LUA_REGISTRYINDEX);
-            dicFunctions.Add(funcName, iFunctionPointer);
-        }
-
-        luaState.Pop(1); //pop return table;
-
-        if (!dicFunctions.ContainsKey("GetMagneticByLatticeIndex"))
-        {
-            ShowErrorMessage("GetMagneticByLatticeIndex function not found.");
+            ShowErrorMessage("GetMagneticByLatticeIndex function cannot been found.");
+            mgr.Destroy();
             return false;
         }
 
@@ -445,47 +413,24 @@ time step={11}",
         {
             for (int y = 0; y < 512; ++y)
             {
-                luaState.RawGetI(LuaDef.LUA_REGISTRYINDEX, dicFunctions["GetMagneticByLatticeIndex"]);
-                int oldTop = luaState.GetTop();
-                luaState.PushCSharpFunction(Traceback);
-                luaState.Insert(oldTop);
-
-                //Set input
-                luaState.PushInteger(x); 
-                luaState.PushInteger(y); 
-                status = luaState.PCall(2, 3, oldTop);
-
-                if (status != ThreadStatus.LUA_OK)
+                object[] r = func.Call2(x, y);
+                if (3 != r.Length 
+                 || !(r[0] is double)
+                 || !(r[1] is double)
+                 || !(r[2] is double))
                 {
-                    ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
+                    ShowErrorMessage("GetMagneticByLatticeIndex should return 3 numbers.");
+                    mgr.Destroy();
                     return false;
                 }
 
-                //get result out
-                int newTop = luaState.GetTop();
-                if (newTop == oldTop)
-                {
-                    ShowErrorMessage("function should return something.");
-                    return false;
-                }
-
-                for (int i = oldTop + 1, j = 0; i <= newTop && j < 3; ++i, ++j)
-                {
-                    _mag_ret[j] = (float)luaState.ToNumber(i);
-                }
-
-                //if return is more then 3, pop them for next lua call
-                if (oldTop != luaState.GetTop())
-                {
-                    luaState.Pop(luaState.GetTop() - oldTop);
-                }
-
-                _mags[y * 512 + x] = new Vector3(_mag_ret[0], _mag_ret[1], _mag_ret[2]);
-
-                luaState.Remove(oldTop);
+                _mags[y * 512 + x] = new Vector3(
+                    (float)(double)r[0], 
+                    (float)(double)r[1], 
+                    (float)(double)r[2]);
             }
         }
-
+        mgr.Destroy();
         SetCurrentState(_mags);
         return true;
     }
@@ -595,53 +540,15 @@ time step={11}",
     private static readonly float[] _jvalues = new float[512 * 512];
     private bool LoadJValue(string sLuaFileName)
     {
+        Util.ClearMemory();
         string sLuaCode = File.ReadAllText(sLuaFileName);
-        ILuaState luaState = LuaAPI.NewState();
-        luaState.L_OpenLibs();
-        ThreadStatus status = luaState.L_DoString(sLuaCode);
-
-        if (ThreadStatus.LUA_OK != status)
+        LuaScriptMgr mgr = new LuaScriptMgr();
+        mgr.DoString(sLuaCode);
+        LuaFunction func = mgr.GetLuaFunction("GetJValueByLatticeIndex");
+        if (null == func)
         {
-            ShowErrorMessage("Lua file excute error.");
-            return false;
-        }
-        if (!luaState.IsTable(-1))
-        {
-            ShowErrorMessage("Lua file does not return function table.");
-            return false;
-        }
-
-        int tableIndex = luaState.GetTop();
-        luaState.PushNil();
-        List<string> funcNames = new List<string>();
-        while (luaState.Next(tableIndex))
-        {
-            if (luaState.IsString(-2) && luaState.IsFunction(-1))
-            {
-                string sFuncName = luaState.ToString(-2);
-                funcNames.Add(sFuncName);
-            }
-            luaState.Pop(1);
-        }
-
-        Dictionary<string, int> dicFunctions = new Dictionary<string, int>();
-        foreach (string funcName in funcNames)
-        {
-            luaState.GetField(-1, funcName);
-            if (!luaState.IsFunction(-1))
-            {
-                ShowErrorMessage("Lua file return a table, but the table does not return function or the name is wrong.");
-                return false;
-            }
-            int iFunctionPointer = luaState.L_Ref(LuaDef.LUA_REGISTRYINDEX);
-            dicFunctions.Add(funcName, iFunctionPointer);
-        }
-
-        luaState.Pop(1); //pop return table;
-
-        if (!dicFunctions.ContainsKey("GetJValueByLatticeIndex"))
-        {
-            ShowErrorMessage("GetJValueByLatticeIndex function not found.");
+            ShowErrorMessage("GetJValueByLatticeIndex function cannot been found.");
+            mgr.Destroy();
             return false;
         }
 
@@ -649,41 +556,17 @@ time step={11}",
         {
             for (int y = 0; y < 512; ++y)
             {
-                luaState.RawGetI(LuaDef.LUA_REGISTRYINDEX, dicFunctions["GetJValueByLatticeIndex"]);
-                int oldTop = luaState.GetTop();
-                luaState.PushCSharpFunction(Traceback);
-                luaState.Insert(oldTop);
-
-                //Set input
-                luaState.PushInteger(x);
-                luaState.PushInteger(y);
-                status = luaState.PCall(2, 1, oldTop);
-
-                if (status != ThreadStatus.LUA_OK)
+                object[] r = func.Call2(x, y);
+                if (1 != r.Length || !(r[0] is double))
                 {
-                    ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
-                }
-
-                //get result out
-                int newTop = luaState.GetTop();
-                if (newTop == oldTop)
-                {
-                    ShowErrorMessage("function should return something.");
+                    ShowErrorMessage("Call function GetJValueByLatticeIndex failed, function may have error.");
+                    mgr.Destroy();
                     return false;
                 }
-
-                _jvalues[y * 512 + x] = (float)luaState.ToNumber(oldTop + 1);
-
-                //if return is more then 1, pop them for next lua call
-                if (oldTop != luaState.GetTop())
-                {
-                    luaState.Pop(luaState.GetTop() - oldTop);
-                }
-
-                luaState.Remove(oldTop);
+                _jvalues[y * 512 + x] = (float)(double)r[0];
             }
         }
-
+        mgr.Destroy();
         SetJTexture(_jvalues);
         return true;
     }
@@ -701,6 +584,7 @@ time step={11}",
         }
         JTexture.SetPixels(_color512);
         JTexture.Apply(false);
+
         CmpShader.SetTexture(m_iKernelHandle, "exchangeStrength", JTexture);
     }
 
@@ -728,137 +612,55 @@ time step={11}",
 
     private bool LoadJXValue(string sLuaFileName)
     {
+        Util.ClearMemory();
         string sLuaCode = File.ReadAllText(sLuaFileName);
-        ILuaState luaState = LuaAPI.NewState();
-        luaState.L_OpenLibs();
-        ThreadStatus status = luaState.L_DoString(sLuaCode);
+        LuaScriptMgr mgr = new LuaScriptMgr();
+        mgr.DoString(sLuaCode);
 
-        if (ThreadStatus.LUA_OK != status)
+        LuaFunction func1 = mgr.GetLuaFunction("GetJxPeroidLength");
+        if (null == func1)
         {
-            ShowErrorMessage("Lua file excute error.");
-            return false;
-        }
-        if (!luaState.IsTable(-1))
-        {
-            ShowErrorMessage("Lua file does not return function table.");
+            ShowErrorMessage("GetJxPeroidLength function cannot been found.");
+            mgr.Destroy();
             return false;
         }
 
-        int tableIndex = luaState.GetTop();
-        luaState.PushNil();
-        List<string> funcNames = new List<string>();
-        while (luaState.Next(tableIndex))
+        object[] r1 = func1.Call();
+        if (1 != r1.Length || !(r1[0] is double))
         {
-            if (luaState.IsString(-2) && luaState.IsFunction(-1))
-            {
-                string sFuncName = luaState.ToString(-2);
-                funcNames.Add(sFuncName);
-            }
-            luaState.Pop(1);
-        }
-
-        Dictionary<string, int> dicFunctions = new Dictionary<string, int>();
-        foreach (string funcName in funcNames)
-        {
-            luaState.GetField(-1, funcName);
-            if (!luaState.IsFunction(-1))
-            {
-                ShowErrorMessage("Lua file return a table, but the table does not return function or the name is wrong.");
-                return false;
-            }
-            int iFunctionPointer = luaState.L_Ref(LuaDef.LUA_REGISTRYINDEX);
-            dicFunctions.Add(funcName, iFunctionPointer);
-        }
-
-        luaState.Pop(1); //pop return table;
-
-        if (!dicFunctions.ContainsKey("GetJxValueInPeroid"))
-        {
-            ShowErrorMessage("GetJxValueInPeroid function not found.");
+            ShowErrorMessage("GetJxPeroidLength function should return a number.");
+            mgr.Destroy();
             return false;
         }
 
-        if (!dicFunctions.ContainsKey("GetJxPeroidLength"))
-        {
-            ShowErrorMessage("GetJxPeroidLength function not found.");
-            return false;
-        }
-
-        #region Get length
-
-        luaState.RawGetI(LuaDef.LUA_REGISTRYINDEX, dicFunctions["GetJxPeroidLength"]);
-        int oldTop1 = luaState.GetTop();
-        luaState.PushCSharpFunction(Traceback);
-        luaState.Insert(oldTop1);
-
-        //Set input
-        status = luaState.PCall(0, 1, oldTop1);
-
-        if (status != ThreadStatus.LUA_OK)
-        {
-            ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
-        }
-
-        //get result out
-        int newTop1 = luaState.GetTop();
-        if (newTop1 == oldTop1)
-        {
-            ShowErrorMessage("function should return something.");
-            return false;
-        }
-
-        int iStepLength = (int)luaState.ToNumber(oldTop1 + 1);
-
-        //if return is more then 1, pop them for next lua call
-        if (oldTop1 != luaState.GetTop())
-        {
-            luaState.Pop(luaState.GetTop() - oldTop1);
-        }
-
-        luaState.Remove(oldTop1);
-
-        #endregion
+        int iStepLength = Mathf.RoundToInt((float)(double)r1[0]);
 
         float[] jxvalue = null;
         if (iStepLength > 0)
         {
+            LuaFunction func2 = mgr.GetLuaFunction("GetJxValueInPeroid");
+            if (null == func2)
+            {
+                ShowErrorMessage("GetJxValueInPeroid function cannot been found.");
+                mgr.Destroy();
+                return false;
+            }
+
             jxvalue = new float[iStepLength];
             for (int y = 0; y < iStepLength; ++y)
             {
-                luaState.RawGetI(LuaDef.LUA_REGISTRYINDEX, dicFunctions["GetJxValueInPeroid"]);
-                int oldTop = luaState.GetTop();
-                luaState.PushCSharpFunction(Traceback);
-                luaState.Insert(oldTop);
-
-                //Set input
-                luaState.PushNumber(y / (float)iStepLength);
-                status = luaState.PCall(1, 1, oldTop);
-
-                if (status != ThreadStatus.LUA_OK)
+                object[] r2 = func2.Call(y / (float)iStepLength);
+                if (1 != r2.Length || !(r2[0] is double))
                 {
-                    ShowErrorMessage("Call function GetMagneticByLatticeIndex failed, function may have error.");
-                }
-
-                //get result out
-                int newTop = luaState.GetTop();
-                if (newTop == oldTop)
-                {
-                    ShowErrorMessage("function should return something.");
+                    ShowErrorMessage("GetJxValueInPeroid function should return a number.");
+                    mgr.Destroy();
                     return false;
                 }
 
-                jxvalue[y] = luaState.ToInteger(oldTop + 1);
-
-                //if return is more then 1, pop them for next lua call
-                if (oldTop != luaState.GetTop())
-                {
-                    luaState.Pop(luaState.GetTop() - oldTop);
-                }
-
-                luaState.Remove(oldTop);
+                jxvalue[y] = (float)(double)r2[0];
             }
         }
-
+        mgr.Destroy();
         SetJXTexture(iStepLength, jxvalue);
         return true;
     }
@@ -868,6 +670,17 @@ time step={11}",
         if (jxStep < 1 || null == jxValue || 0 == jxValue.Length)
         {
             CmpShader.SetInt("jxperoid", 0);
+
+            Color[] nonejxcolor = new Color[1];
+            nonejxcolor[0] = new Color(0.0f, 0.0f, 0.0f);
+            if (null == JxTexture || JxTexture.width != 1)
+            {
+                JxTexture = new Texture2D(1, 1, TextureFormat.RFloat, false);
+            }
+            JxTexture.SetPixels(nonejxcolor);
+            JxTexture.Apply(false);
+            CmpShader.SetTexture(m_iKernelHandle, "jxPeroidFunction", JxTexture);
+
             return;
         }
 
@@ -885,25 +698,6 @@ time step={11}",
         JxTexture.Apply(false);
         CmpShader.SetInt("jxperoid", jxStep);
         CmpShader.SetTexture(m_iKernelHandle, "jxPeroidFunction", JxTexture);
-    }
-
-    private static int Traceback(ILuaState lua)
-    {
-        var msg = lua.ToString(1);
-        if (msg != null)
-        {
-            lua.L_Traceback(lua, msg, 1);
-        }
-        // is there an error object?
-        else if (!lua.IsNoneOrNil(1))
-        {
-            // try its `tostring' metamethod
-            if (!lua.L_CallMeta(1, "__tostring"))
-            {
-                lua.PushString("(no error message)");
-            }
-        }
-        return 1;
     }
 
     public void ShowErrorMessage(string sMsg)

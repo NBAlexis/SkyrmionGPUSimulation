@@ -1,0 +1,17 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+//RWStructuredBuffer<float3> magneticMomentum;
+RWTexture2D<float4> testInOut;
+
+[numthreads(2, 2, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float4 s4 = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    float4 add1 = float4((1 == id.x) ? 1.0f : 0.0f, 0.0f, 0.0f, 0.0f);
+    float4 add2 = float4(0.0f, 0.0f, (0 == id.x && 0 == id.y) ? 1.0f : 0.0f, 0.0f);
+    float4 add3 = float4(0.0f, (0 == id.x && 1 == id.y) ? 1.0f : 0.0f, 0.0f, 0.0f);
+    testInOut[id.xy] = s4 + add1 + add2 + add3;
+}

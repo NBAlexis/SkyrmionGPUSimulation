@@ -40,7 +40,10 @@ public class PostBuildFileCopy
         targetDir.CreateSubdirectory("LuaScript");
         foreach (FileInfo f in new DirectoryInfo(Application.dataPath + "/LuaScript").GetFiles("*.lua"))
         {
-            File.Copy(f.FullName, sFolder + "/LuaScript/" + f.Name);
+            if (!f.FullName.ToLower().Contains("testluacall.lua"))
+            {
+                File.Copy(f.FullName, sFolder + "/LuaScript/" + f.Name);
+            }
         }
         targetDir.CreateSubdirectory("BoundConditions");
         foreach (FileInfo f in new DirectoryInfo(Application.dataPath + "/BoundConditions").GetFiles("*.png"))

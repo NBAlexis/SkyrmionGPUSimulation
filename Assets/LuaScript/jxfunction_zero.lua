@@ -9,11 +9,5 @@ end
 
 -- the length of the peroid (steps)
 function GetJxPeroidLength()
-    return 1
+    return 0
 end
-
--- Need to register the function
-return { 
-    GetJxValueInPeroid = GetJxValueInPeroid,
-    GetJxPeroidLength = GetJxPeroidLength,
-}

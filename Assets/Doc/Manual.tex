@@ -93,7 +93,7 @@ The configuration of above will generate results shown in Fig.~\ref{fig:result}.
 
 \section{\label{sec:2}Exchange strength}
 
-The exchange strength is a lua script with a function `GetJValueByLatticeIndex', and return a table with the function. For example, a constant exchange strength $J=2$ can be written as
+The exchange strength is a lua script with a function `GetJValueByLatticeIndex', for example, a constant exchange strength $J=2$ can be written as
 \lstset{
     numbers=left,
     numberstyle= \tiny,
@@ -116,11 +116,6 @@ The exchange strength is a lua script with a function `GetJValueByLatticeIndex',
 function GetJValueByLatticeIndex(x, y)
     return 2.0
 end
-
--- Need to register the function
-return {
-    GetJValueByLatticeIndex = GetJValueByLatticeIndex,
-}
 \end{lstlisting}
 while a pin with $J=1+\exp \left(-0.001 \rho ^2\right)$ at lattice index $(255, 255)$ can be written as
 \begin{lstlisting}
@@ -133,18 +128,13 @@ function GetJValueByLatticeIndex(x, y)
 
     return j0 + j1 * math.exp(-1.0 * j2 * rho)
 end
-
--- Need to register the function
-return {
-    GetJValueByLatticeIndex = GetJValueByLatticeIndex,
-}
 \end{lstlisting}
 
 The lua files are put in 'LuaScript` sub-folder in the folder of the executable file.
 
 \section{\label{sec:3}Magnetic momentum}
 
-The magnetic momentums can be initialized or reset using a lua script, with a function 'GetMagneticByLatticeIndex`, and return the table with the function.
+The magnetic momentums can be initialized or reset using a lua script, with a function 'GetMagneticByLatticeIndex`.
 
 For example, random magnetic momentums can be written as
 \begin{lstlisting}
@@ -157,11 +147,6 @@ function GetMagneticByLatticeIndex(x, y)
     length_inv = math.max(length_inv, 0.000000001)
     return nx * length_inv, ny * length_inv, nz * length_inv
 end
-
--- Need to register the function
-return {
-    GetMagneticByLatticeIndex = GetMagneticByLatticeIndex,
-}
 \end{lstlisting}
 The magnetic momentums pointing up can be written as
 \begin{lstlisting}
@@ -169,12 +154,6 @@ The magnetic momentums pointing up can be written as
 function GetMagneticByLatticeIndex(x, y)
     return 0, 0, 1
 end
-
--- Need to register the function
-return {
-    GetMagneticByLatticeIndex = GetMagneticByLatticeIndex,
-}
-
 \end{lstlisting}
 The magnetic momentums of a skyrmion at $100,255$ can be written as
 \begin{lstlisting}
@@ -192,11 +171,6 @@ function GetMagneticByLatticeIndex(x, y)
 
     return nx, ny, nz
 end
-
--- Need to register the function
-return {
-    GetMagneticByLatticeIndex = GetMagneticByLatticeIndex,
-}
 \end{lstlisting}
 
 The magnetic momentum can also been initialized or reset using a $512\times 512$ image, with color $R=n_x\times 0.5+0.5$, $G=n_x\times 0.5+0.5$, $B=n_x\times 0.5+0.5$. This is also the file format of 'raw image` of the output introduced in Sec.~\ref{sec:5}. So one can load, for example 'month-day-hour-munite\_step\_raw.png` and set or reset the magnetic momentum with the result simulated before.
@@ -230,12 +204,6 @@ end
 function GetJxPeroidLength()
     return 1
 end
-
--- Need to register the function
-return {
-    GetJxValueInPeroid = GetJxValueInPeroid,
-    GetJxPeroidLength = GetJxPeroidLength,
-}
 \end{lstlisting}
 
 Note that, there must be 2 functions:
@@ -260,12 +228,6 @@ end
 function GetJxPeroidLength()
     return 10000
 end
-
--- Need to register the function
-return {
-    GetJxValueInPeroid = GetJxValueInPeroid,
-    GetJxPeroidLength = GetJxPeroidLength,
-}
 \end{lstlisting}
 
 If the time step is set to be $0.001$, the actual period is $10000$ steps, thus the actual period is $10000 \times 0.001 = 10$, so this is to apply a $j_x(t)=\sin (2\pi \times 10 \times t)$.
@@ -303,33 +265,48 @@ For example, the code
     %emph=[2]{word1,word2}, emphstyle=[2]{style},
 }
 \begin{lstlisting}
-imds = imageDatastore({'4-3-15-14_3300000_raw.png'});
+imds = imageDatastore({'6-10-20-20_14000000_raw.png'});
+vectorlength=16;
 img = readimage(imds,1);
 
+nx=zeros(512,512);
+ny=zeros(512,512);
 nz=zeros(512,512);
-for i=1:512
-    for j=1:512
-        nx=2.0*(double(img(i,j,1))/255.0) - 1.0;
-        ny=2.0*(double(img(i,j,2))/255.0) - 1.0;
-        nz(i,j)=2.0*(double(img(i,j,3))/255.0) - 1.0;
+newx = zeros(512/vectorlength,512/vectorlength);
+newy = zeros(512/vectorlength,512/vectorlength);
+for x=1:512
+    for y=1:512
+        %In matlab, (0, 0) is at left-top corner.
+        %The output, (0, 0) is at left-buttom corner.
+        %So we need to use 513 - y to get the correct coordinate
+        nx(y,x)= 2.0*(double(img(513 - y,x,1))/255.0) - 1.0;
+        ny(y,x)= 2.0*(double(img(513 - y,x,2))/255.0) - 1.0;
+        nz(y,x)= 2.0*(double(img(513 - y,x,3))/255.0) - 1.0;
+
+        if mod(x,vectorlength) == vectorlength/2 &&  mod(y,vectorlength) == vectorlength/2
+            xx = (x+vectorlength/2)/vectorlength;
+            yy = (y+vectorlength/2)/vectorlength;
+            newx(yy,xx) = nx(y,x);
+            newy(yy,xx) = ny(y,x);
+        end
     end
 end
 
-x = 1:1:512;
-y = 1:1:512;
-[X,Y] = meshgrid(x,y);
-Z = nz;
-v = [cos(pi*exp(-1.0)),cos(pi*exp(-1.0))];
-
 figure
-imshow(img)
-hold on;
-contour(X,Y,Z,v,'linecolor','k')
+imagesc(nz)
+set(gca, 'YDir', 'normal')
+hC = colorbar;
+L = [-1 -0.5 0 0.5 1];
+l = [-1 -0.5 0 0.5 1];
+set(hC,'Ytick',l,'YTicklabel',L);
+hold on
+quiver((vectorlength/2):vectorlength:512,(vectorlength/2):vectorlength:512,newx,newy,0.5,'k')
 \end{lstlisting}
-will detect possible edge of a skyrmion, and the result is shown in Fig.~\ref{Fig:edge}.
+will draw the magnetic momentum which shown in Fig.~\ref{Fig:draw}.
 \begin{figure}
-\includegraphics[scale=0.5]{edges.png}
-\caption{\label{Fig:edge}Possible edge (NOTE: NOT Accurate!).}
+\subfloat[raw]{\includegraphics[width=0.5\textwidth]{6-10-20-20_14000000_raw.png}}\hfill
+\subfloat[output by matlab]{\includegraphics[width=0.5\textwidth]{draw.eps}}\vfill
+\caption{\label{Fig:draw}Output by matlab.}
 \end{figure}
 
 The content of the 'prof.txt` is the configuration of the simulation, for example
@@ -351,7 +328,7 @@ The 'pic.png` is a illustration of the magnetic momentums. Part of it is shown i
 \begin{figure}
 \includegraphics[scale=0.3]{output2.png}
 \includegraphics[scale=0.5]{parula.png}
-\caption{\label{Fig:output2}Illustration of the magnetic momentums. The color shows $n_z$. The color map is 'parula` in Matlab. The small black lines show $(n_x,n_y)$.}
+\caption{\label{Fig:output2}Illustration of the magnetic momentums. The color shows $n_z$ \textcolor[rgb]{1,0,0}{Note that $n_z=1$ is blue and $n_z=-1$ is yellow!}. The color map is 'parula` in Matlab. The small black lines show $(n_x,n_y)$.}
 \end{figure}
 
 \section{\label{sec:7}An example of simulation}

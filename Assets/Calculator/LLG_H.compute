@@ -22,6 +22,8 @@ float timestep;
 uint jxstep;
 uint jxperoid;
 
+//(0,0) is left buttom corner!
+//only change the name up to down, the result is unchanged...
 [numthreads(8, 8, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -31,24 +33,24 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     float3 sleft    = id.x > 1 ? float3(magneticMomentumX[id.xy - uint2(1, 0)].x, magneticMomentumY[id.xy - uint2(1, 0)].x, magneticMomentumZ[id.xy - uint2(1, 0)].x) : zero3;
     float3 sright   = id.x < (size.x - 1) ? float3(magneticMomentumX[id.xy + uint2(1, 0)].x, magneticMomentumY[id.xy + uint2(1, 0)].x, magneticMomentumZ[id.xy + uint2(1, 0)].x) : zero3;
-    float3 sup      = id.y > 1 ? float3(magneticMomentumX[id.xy - uint2(0, 1)].x, magneticMomentumY[id.xy - uint2(0, 1)].x, magneticMomentumZ[id.xy - uint2(0, 1)].x) : zero3;
-    float3 sdown    = id.y < (size.y - 1) ? float3(magneticMomentumX[id.xy + uint2(0, 1)].x, magneticMomentumY[id.xy + uint2(0, 1)].x, magneticMomentumZ[id.xy + uint2(0, 1)].x) : zero3;
+    float3 sdown    = id.y > 1 ? float3(magneticMomentumX[id.xy - uint2(0, 1)].x, magneticMomentumY[id.xy - uint2(0, 1)].x, magneticMomentumZ[id.xy - uint2(0, 1)].x) : zero3;
+    float3 sup      = id.y < (size.y - 1) ? float3(magneticMomentumX[id.xy + uint2(0, 1)].x, magneticMomentumY[id.xy + uint2(0, 1)].x, magneticMomentumZ[id.xy + uint2(0, 1)].x) : zero3;
 
     float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
 
     float j_s       = exchangeStrength[id.xy].x;
     float j_left    = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)].x : 0.0f;
-    float j_up      = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
+    float j_down    = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
 
     float d_s       = D0 + D * j_s;
     float d_left    = id.x > 1 ? (D0 + D * j_left) : 0.0f;
-    float d_up      = id.y > 1 ? (D0 + D * j_up) : 0.0f;
+    float d_down    = id.y > 1 ? (D0 + D * j_down) : 0.0f;
 
-    float3 vright    = float3(1.0, 0.0, 0.0);
-    float3 vdown     = float3(0.0, 1.0, 0.0);
+    float3 vright   = float3(1.0, 0.0, 0.0);
+    float3 vup      = float3(0.0, 1.0, 0.0);
 
-    float3 beff = (j_left * sleft + j_s * sright + j_up * sup + j_s * sdown)
-        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sdown, vdown) - d_up * cross(sup, vdown))
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
         + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
 
     jxstep++;
