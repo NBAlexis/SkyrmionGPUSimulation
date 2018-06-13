@@ -9,7 +9,3 @@ function GetMagneticByLatticeIndex(x, y)
     return nx * length_inv, ny * length_inv, nz * length_inv
 end
 
--- Need to register the function
-return { 
-    GetMagneticByLatticeIndex = GetMagneticByLatticeIndex,
-}

@@ -12,8 +12,3 @@ function GetJValueByLatticeIndex(x, y)
 
     return j0 + j1 * (math.exp(-1.0 * j2 * rho1) + math.exp(-1.0 * j2 * rho2) + math.exp(-1.0 * j2 * rho3))
 end
-
--- Need to register the function
-return { 
-    GetJValueByLatticeIndex = GetJValueByLatticeIndex,
-}
