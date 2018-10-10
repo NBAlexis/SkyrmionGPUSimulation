@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using LuaInterface;
 using SFB;
@@ -51,11 +52,18 @@ public class CManager : MonoBehaviour
     #region Compute Shader
 
     public ComputeShader CmpShader;
+    private int m_iK1Handle;
+    private int m_iK2Handle;
+    private int m_iK3Handle;
     private int m_iKernelHandle;
 
     #endregion
 
     #region Calculators
+
+    private RenderTexture K1X;
+    private RenderTexture K1Y;
+    private RenderTexture K1Z;
 
     private RenderTexture InternalRTR;
     private RenderTexture InternalRTG;
@@ -65,11 +73,84 @@ public class CManager : MonoBehaviour
 
     #endregion
 
+    #region Std Dev
+
+    public Text StandardDevationText;
+    public Toggle StandardDevationToggle;
+
+    private int m_iLastPreserveStep = -1;
+
+    private Texture2D PreData = null;
+
+    private static readonly List<string> m_lstStdDevRes = new List<string>();
+
+    private void CalculateStdDev()
+    {
+        RenderTexture rt = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB32);
+
+        MatGetXYZ.SetTexture("_Nx", InternalRTR);
+        MatGetXYZ.SetTexture("_Ny", InternalRTG);
+        MatGetXYZ.SetTexture("_Nz", InternalRTB);
+        Graphics.Blit(null, rt, MatGetXYZ);
+        Texture2D dataReader = new Texture2D(512, 512, TextureFormat.ARGB32, false);
+        RenderTexture.active = rt;
+        dataReader.ReadPixels(new Rect(0, 0, 512, 512), 0, 0);
+        dataReader.Apply();
+        RenderTexture.active = null;
+        rt.Release();
+
+        //Data obtained in dataReader
+        if (m_iLastPreserveStep != m_iFrame - 1 || null == PreData)
+        {
+            if (null != PreData)
+            {
+                Destroy(PreData);
+                PreData = null;
+            }
+            PreData = dataReader;
+            m_iLastPreserveStep = m_iFrame;
+            return;
+        }
+
+        double err = 0.0f;
+        for (int i = 0; i < 512; ++i)
+        {
+            for (int j = 0; j < 512; ++j)
+            {
+                Color c1 = PreData.GetPixel(i, j);
+                Color c2 = dataReader.GetPixel(i, j);
+                err += new Vector3(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b).sqrMagnitude;
+            }
+        }
+        err = err/(Mathf.Sqrt(512*512 - 1)* m_fTimeStep);
+
+        m_lstStdDevRes.Add(string.Format("step{0}:\n{1}\n", m_iFrame, err));
+        if (m_lstStdDevRes.Count > 80)
+        {
+            m_lstStdDevRes.RemoveAt(0);
+        }
+
+        string sOutPut = "";
+        for (int i = 0; i < m_lstStdDevRes.Count; ++i)
+        {
+            sOutPut = sOutPut + m_lstStdDevRes[m_lstStdDevRes.Count - i - 1];
+        }
+        StandardDevationText.text = sOutPut;
+
+        Destroy(PreData);
+        PreData = null;
+        PreData = dataReader;
+        m_iLastPreserveStep = m_iFrame;
+    }
+
+    #endregion
+
     private Texture2D m_pTestT2;
     private int m_iFrame = 0;
     private int m_iStopFrame = -1;
     private int m_iSaveFrame = -1;
     private bool m_bRunning = false;
+    private float m_fTimeStep = 1.0f;
     private DateTime m_dtSim;
 
     private bool m_bJSet = false;
@@ -101,8 +182,38 @@ public class CManager : MonoBehaviour
 
         Indicator.texture = indit;
 
+        m_iK1Handle = CmpShader.FindKernel("CaclK1");
+        m_iK2Handle = CmpShader.FindKernel("CaclK2");
+        m_iK3Handle = CmpShader.FindKernel("CaclK3");
         m_iKernelHandle = CmpShader.FindKernel("CSMain");
         CmpShader.SetInts("size", new int[] { 512, 512 });
+
+        K1X = new RenderTexture(1024, 1024, 0, RenderTextureFormat.RFloat);
+        K1X.enableRandomWrite = true;
+        K1X.Create();
+        K1Y = new RenderTexture(1024, 1024, 0, RenderTextureFormat.RFloat);
+        K1Y.enableRandomWrite = true;
+        K1Y.Create();
+        K1Z = new RenderTexture(1024, 1024, 0, RenderTextureFormat.RFloat);
+        K1Z.enableRandomWrite = true;
+        K1Z.Create();
+
+        CmpShader.SetTexture(m_iK1Handle, "k1x", K1X);
+        CmpShader.SetTexture(m_iK1Handle, "k1y", K1Y);
+        CmpShader.SetTexture(m_iK1Handle, "k1z", K1Z);
+
+        CmpShader.SetTexture(m_iK2Handle, "k1x", K1X);
+        CmpShader.SetTexture(m_iK2Handle, "k1y", K1Y);
+        CmpShader.SetTexture(m_iK2Handle, "k1z", K1Z);
+
+        CmpShader.SetTexture(m_iK3Handle, "k1x", K1X);
+        CmpShader.SetTexture(m_iK3Handle, "k1y", K1Y);
+        CmpShader.SetTexture(m_iK3Handle, "k1z", K1Z);
+
+        CmpShader.SetTexture(m_iKernelHandle, "k1x", K1X);
+        CmpShader.SetTexture(m_iKernelHandle, "k1y", K1Y);
+        CmpShader.SetTexture(m_iKernelHandle, "k1z", K1Z);
+
 
         Bt.GetComponentInChildren<Text>().text = "Start";
 
@@ -115,6 +226,9 @@ public class CManager : MonoBehaviour
     {
 	    if (m_bRunning)
 	    {
+            CmpShader.Dispatch(m_iK1Handle, 512 / 8, 512 / 8, 1);
+            CmpShader.Dispatch(m_iK2Handle, 512 / 8, 512 / 8, 1);
+            CmpShader.Dispatch(m_iK3Handle, 512 / 8, 512 / 8, 1);
             CmpShader.Dispatch(m_iKernelHandle, 512 / 8, 512 / 8, 1);
 
             ++m_iFrame;
@@ -126,6 +240,11 @@ public class CManager : MonoBehaviour
 	        //    m_fShowSepTicker = 0.0f;
             //    Graphics.Blit(null, ShowRT, GetXYZ);
 	        //}
+
+	        if (StandardDevationToggle.isOn)
+	        {
+	            CalculateStdDev();
+	        }
 
             if (m_iStopFrame == m_iFrame)
 	        {
@@ -188,7 +307,8 @@ public class CManager : MonoBehaviour
             CmpShader.SetFloat("D", float.Parse(D.text));
             CmpShader.SetFloat("D0", float.Parse(D0.text));
             CmpShader.SetFloat("B", float.Parse(B.text));
-            CmpShader.SetFloat("timestep", float.Parse(timestep.text));
+            m_fTimeStep = float.Parse(timestep.text);
+            CmpShader.SetFloat("timestep", m_fTimeStep);
             CmpShader.SetFloat("alpha", float.Parse(alpha.text));
 
             m_bRunning = true;
@@ -222,18 +342,11 @@ public class CManager : MonoBehaviour
 
     public void LoadMagneticBt()
     {
-#if alsonotworkinIL2CPP
-        string[] sPath = WinDialog.OpenFile(
-            "Choose the script or image",
-            Application.dataPath + _outfolder,
-            "lua files (*.lua)\0*.lua\0png files(*.png)\0*.png\0jpg files(*.jpg)\0*.jpg\0\0"
-            );
-#else
         string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the script or image", 
             Application.dataPath + _outfolder,
             new[] { new ExtensionFilter("Lua Script", "lua"), new ExtensionFilter("Image Files", "png", "jpg", "jpeg"), }, 
             false);
-#endif
+
         if (sPath.Length > 0 && !string.IsNullOrEmpty(sPath[0]))
         {
             if (sPath[0].Contains(".lua"))
@@ -372,7 +485,7 @@ time step={11}",
             D.text,
             B.text,
             alpha.text,
-            timestep.text
+            m_fTimeStep
             ), 
             InternalRTR,
             InternalRTG,
@@ -530,6 +643,16 @@ time step={11}",
         Graphics.Blit(_txG, InternalRTG);
         Graphics.Blit(_txB, InternalRTB);
 
+        CmpShader.SetTexture(m_iK1Handle, "magneticMomentumX", InternalRTR);
+        CmpShader.SetTexture(m_iK1Handle, "magneticMomentumY", InternalRTG);
+        CmpShader.SetTexture(m_iK1Handle, "magneticMomentumZ", InternalRTB);
+        CmpShader.SetTexture(m_iK2Handle, "magneticMomentumX", InternalRTR);
+        CmpShader.SetTexture(m_iK2Handle, "magneticMomentumY", InternalRTG);
+        CmpShader.SetTexture(m_iK2Handle, "magneticMomentumZ", InternalRTB);
+        CmpShader.SetTexture(m_iK3Handle, "magneticMomentumX", InternalRTR);
+        CmpShader.SetTexture(m_iK3Handle, "magneticMomentumY", InternalRTG);
+        CmpShader.SetTexture(m_iK3Handle, "magneticMomentumZ", InternalRTB);
+
         CmpShader.SetTexture(m_iKernelHandle, "magneticMomentumX", InternalRTR);
         CmpShader.SetTexture(m_iKernelHandle, "magneticMomentumY", InternalRTG);
         CmpShader.SetTexture(m_iKernelHandle, "magneticMomentumZ", InternalRTB);
@@ -585,6 +708,9 @@ time step={11}",
         JTexture.SetPixels(_color512);
         JTexture.Apply(false);
 
+        CmpShader.SetTexture(m_iK1Handle, "exchangeStrength", JTexture);
+        CmpShader.SetTexture(m_iK2Handle, "exchangeStrength", JTexture);
+        CmpShader.SetTexture(m_iK3Handle, "exchangeStrength", JTexture);
         CmpShader.SetTexture(m_iKernelHandle, "exchangeStrength", JTexture);
     }
 
@@ -633,7 +759,8 @@ time step={11}",
             return false;
         }
 
-        int iStepLength = Mathf.RoundToInt((float)(double)r1[0]);
+        //The 2.0f multipler is For Runge–Kutta, we need t + dt and t + 0.5 dt both!
+        int iStepLength = Mathf.RoundToInt((float)(double)r1[0] * 2.0f);
 
         float[] jxvalue = null;
         if (iStepLength > 0)
@@ -679,6 +806,11 @@ time step={11}",
             }
             JxTexture.SetPixels(nonejxcolor);
             JxTexture.Apply(false);
+
+            CmpShader.SetTexture(m_iK1Handle, "jxPeroidFunction", JxTexture);
+            CmpShader.SetTexture(m_iK2Handle, "jxPeroidFunction", JxTexture);
+            CmpShader.SetTexture(m_iK3Handle, "jxPeroidFunction", JxTexture);
+
             CmpShader.SetTexture(m_iKernelHandle, "jxPeroidFunction", JxTexture);
 
             return;
@@ -697,6 +829,11 @@ time step={11}",
         JxTexture.SetPixels(jxcolors);
         JxTexture.Apply(false);
         CmpShader.SetInt("jxperoid", jxStep);
+
+        CmpShader.SetTexture(m_iK1Handle, "jxPeroidFunction", JxTexture);
+        CmpShader.SetTexture(m_iK2Handle, "jxPeroidFunction", JxTexture);
+        CmpShader.SetTexture(m_iK3Handle, "jxPeroidFunction", JxTexture);
+
         CmpShader.SetTexture(m_iKernelHandle, "jxPeroidFunction", JxTexture);
     }
 

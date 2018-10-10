@@ -216,7 +216,7 @@ which leads to
 
 \subsection{\label{sec:2.5}anisotropy}
 
-In some material, the effective Hamiltonian can be written with anisotropy terms as (ignore $a$, this is as same as Eq.~(10) in Ref.~{spintransfer})
+In some material, the effective Hamiltonian can be written with anisotropy terms as (if ignore $a$, this is as same as Eq.~(10) in Ref.~\cite{spintransfer})
 \begin{equation}
 \begin{split}
 &H_S=\sum _{{\bf r}}\left[-\frac{J}{a^3} ({\bf n}({\bf r}+\delta_x)+{\bf n}({\bf r}+\delta_y))-\frac{D}{a^3}  ({\bf n}({\bf r}+\delta_x)\times {{\bf e}}_x+{\bf n}({\bf r}+\delta_y)\times {{\bf e}}_y)-\frac{\mu}{a^3}{\bf B}\right.\\
@@ -265,7 +265,7 @@ This is in fact a combine of $3$ equations which can be written as
 \end{split}
 \end{equation}
 
-Assuming $\alpha \ll 1$, it can be written as
+It can be written as
 \begin{equation}
 \begin{split}
 &\frac{d{\bf n}}{dt}=\frac{1}{1+\alpha^2}\left({\bf N}+\alpha {\bf N}\times {\bf n}+\alpha ^2 ({\bf n}\cdot {\bf N}){\bf n}\right)
@@ -291,9 +291,14 @@ One can use this to evaluate
 \begin{split}
 &{\bf n}(t+\Delta t)={\bf n}(t)+\Delta t \left({\bf N}(t)+\alpha {\bf N}(t)\times {\bf n}(t)\right)
 \end{split}
+\label{eqdt}
 \end{equation}
 
-\section{\label{sec:4}Simulation}
+\section{\label{sec:4}Runge¨CKutta}
+
+The Eq.~(\ref{eqdt}) can be easily implemented, however, it is better to evaluate using Runge¨CKutta method.
+
+\section{\label{sec:5}Simulation}
 
 The simulation is running on GPU using the compute shader in Unity3D. The implementation of LLG is the LLG\_c.compute, the content is
 
@@ -455,6 +460,9 @@ Ye-Hua Liu, You-Quan Li, J. Phys.: Condens. Matter 25 076005, 10.1088/0953-8984/
 
 \bibitem{spintransfer}
 Junichi Iwasaki, Wataru Koshibae, and Naoto Nagaosa, Nano. Lett. 2014, 14, 4432-4437, 10.1021/nl501379k.
+
+\bibitem{RK4}
+https://en.wikipedia.org/wiki/Runge\%E2\%80\%93Kutta_methods
 
 \end{thebibliography}
 

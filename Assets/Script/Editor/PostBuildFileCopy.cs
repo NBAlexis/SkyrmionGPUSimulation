@@ -53,7 +53,11 @@ public class PostBuildFileCopy
         targetDir.CreateSubdirectory("Doc");
         foreach (FileInfo f in new DirectoryInfo(Application.dataPath + "/Doc").GetFiles("*.pdf"))
         {
-            File.Copy(f.FullName, sFolder + "/Doc/" + f.Name);
+            if (!f.FullName.Contains("rk4test")
+             && !f.FullName.Contains("eps-converted"))
+            {
+                File.Copy(f.FullName, sFolder + "/Doc/" + f.Name);
+            }
         }
         targetDir.CreateSubdirectory("Output");
         File.Copy(Application.dataPath + "/Output/.gitignore", sFolder + "/Output/.gitignore");

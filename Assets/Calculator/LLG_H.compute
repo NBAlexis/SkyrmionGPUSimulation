@@ -1,16 +1,25 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+#pragma kernel CaclK1
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 //RWStructuredBuffer<float3> magneticMomentum;
-RWTexture2D<float4> magneticMomentumX;
-RWTexture2D<float4> magneticMomentumY;
-RWTexture2D<float4> magneticMomentumZ;
+//Using RFloat texture format so we do not need a float4.
+RWTexture2D<float> magneticMomentumX;
+RWTexture2D<float> magneticMomentumY;
+RWTexture2D<float> magneticMomentumZ;
+
+//1024 x 1024
+//0,0-512,512 is k1
+//512,0-1024,512 is k2
+//0,512-512,1024 is k3
+RWTexture2D<float> k1x;
+RWTexture2D<float> k1y;
+RWTexture2D<float> k1z;
 
 Texture2D<float4>  boundaryCondition;
-Texture2D<float4>  exchangeStrength;
-Texture2D<float4>  jxPeroidFunction;
+Texture2D<float>  exchangeStrength;
+Texture2D<float>  jxPeroidFunction;
 
 uint2 size;
 float K;
@@ -22,47 +31,229 @@ float timestep;
 uint jxstep;
 uint jxperoid;
 
-//(0,0) is left buttom corner!
-//only change the name up to down, the result is unchanged...
 [numthreads(8, 8, 1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+void CaclK1(uint3 id : SV_DispatchThreadID)
 {
     float3 zero3 = float3(0.0f, 0.0f, 0.0f);
 
-    float3 s = float3(magneticMomentumX[id.xy].x, magneticMomentumY[id.xy].x, magneticMomentumZ[id.xy].x);
+    float3 s = float3(magneticMomentumX[id.xy], magneticMomentumY[id.xy], magneticMomentumZ[id.xy]);
 
-    float3 sleft    = id.x > 1 ? float3(magneticMomentumX[id.xy - uint2(1, 0)].x, magneticMomentumY[id.xy - uint2(1, 0)].x, magneticMomentumZ[id.xy - uint2(1, 0)].x) : zero3;
-    float3 sright   = id.x < (size.x - 1) ? float3(magneticMomentumX[id.xy + uint2(1, 0)].x, magneticMomentumY[id.xy + uint2(1, 0)].x, magneticMomentumZ[id.xy + uint2(1, 0)].x) : zero3;
-    float3 sdown    = id.y > 1 ? float3(magneticMomentumX[id.xy - uint2(0, 1)].x, magneticMomentumY[id.xy - uint2(0, 1)].x, magneticMomentumZ[id.xy - uint2(0, 1)].x) : zero3;
-    float3 sup      = id.y < (size.y - 1) ? float3(magneticMomentumX[id.xy + uint2(0, 1)].x, magneticMomentumY[id.xy + uint2(0, 1)].x, magneticMomentumZ[id.xy + uint2(0, 1)].x) : zero3;
+    float3 sleft = id.x > 1 ? float3(magneticMomentumX[id.xy - uint2(1, 0)], magneticMomentumY[id.xy - uint2(1, 0)], magneticMomentumZ[id.xy - uint2(1, 0)]) : zero3;
+    float3 sright = id.x < (size.x - 1) ? float3(magneticMomentumX[id.xy + uint2(1, 0)], magneticMomentumY[id.xy + uint2(1, 0)], magneticMomentumZ[id.xy + uint2(1, 0)]) : zero3;
+    float3 sdown = id.y > 1 ? float3(magneticMomentumX[id.xy - uint2(0, 1)], magneticMomentumY[id.xy - uint2(0, 1)], magneticMomentumZ[id.xy - uint2(0, 1)]) : zero3;
+    float3 sup = id.y < (size.y - 1) ? float3(magneticMomentumX[id.xy + uint2(0, 1)], magneticMomentumY[id.xy + uint2(0, 1)], magneticMomentumZ[id.xy + uint2(0, 1)]) : zero3;
 
-    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+    float j_s = exchangeStrength[id.xy];
+    float j_left = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)] : 0.0f;
+    float j_down = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)] : 0.0f;
 
-    float j_s       = exchangeStrength[id.xy].x;
-    float j_left    = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)].x : 0.0f;
-    float j_down    = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)].x : 0.0f;
+    float d_s = D0 + D * j_s;
+    float d_left = id.x > 1 ? (D0 + D * j_left) : 0.0f;
+    float d_down = id.y > 1 ? (D0 + D * j_down) : 0.0f;
 
-    float d_s       = D0 + D * j_s;
-    float d_left    = id.x > 1 ? (D0 + D * j_left) : 0.0f;
-    float d_down    = id.y > 1 ? (D0 + D * j_down) : 0.0f;
-
-    float3 vright   = float3(1.0, 0.0, 0.0);
-    float3 vup      = float3(0.0, 1.0, 0.0);
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
 
     float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
         + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
         + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
 
-    jxstep++;
-    float jx = jxperoid > 0 ? jxPeroidFunction[uint2(jxstep % jxperoid, 0)].x : 0.0f;
+    //t is now
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2(jxstep % jxperoid, 0)] : 0.0f;
     float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
 
     float3 newS = cross(s, beff) + stt;
     newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
 
-    float3 retColor = edge < 0.5f ? zero3 : normalize(s + timestep * newS);
+    float3 k1res = timestep * newS;
 
-    magneticMomentumX[id.xy] = float4(retColor.x * edge, 0.0f, 0.0f, 1.0f);
-    magneticMomentumY[id.xy] = float4(retColor.y * edge, 0.0f, 0.0f, 1.0f);
-    magneticMomentumZ[id.xy] = float4(retColor.z * edge, 0.0f, 0.0f, 1.0f);
+    k1x[id.xy] = k1res.x;
+    k1y[id.xy] = k1res.y;
+    k1z[id.xy] = k1res.z;
+}
+
+#pragma kernel CaclK2
+
+[numthreads(8, 8, 1)]
+void CaclK2(uint3 id : SV_DispatchThreadID)
+{
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    float3 s = float3(magneticMomentumX[id.xy] + 0.5 * k1x[id.xy], 
+                      magneticMomentumY[id.xy] + 0.5 * k1y[id.xy],
+                      magneticMomentumZ[id.xy] + 0.5 * k1z[id.xy]);
+
+    float3 sleft = id.x > 1 ? 
+        float3(magneticMomentumX[id.xy - uint2(1, 0)] + 0.5 * k1x[id.xy - uint2(1, 0)],
+               magneticMomentumY[id.xy - uint2(1, 0)] + 0.5 * k1y[id.xy - uint2(1, 0)],
+               magneticMomentumZ[id.xy - uint2(1, 0)] + 0.5 * k1z[id.xy - uint2(1, 0)]) : zero3;
+    float3 sright = id.x < (size.x - 1) ? 
+        float3(magneticMomentumX[id.xy + uint2(1, 0)] + 0.5 * k1x[id.xy + uint2(1, 0)],
+               magneticMomentumY[id.xy + uint2(1, 0)] + 0.5 * k1y[id.xy + uint2(1, 0)],
+               magneticMomentumZ[id.xy + uint2(1, 0)] + 0.5 * k1z[id.xy + uint2(1, 0)]) : zero3;
+    float3 sdown = id.y > 1 ? 
+        float3(magneticMomentumX[id.xy - uint2(0, 1)] + 0.5 * k1x[id.xy - uint2(0, 1)],
+               magneticMomentumY[id.xy - uint2(0, 1)] + 0.5 * k1y[id.xy - uint2(0, 1)],
+               magneticMomentumZ[id.xy - uint2(0, 1)] + 0.5 * k1z[id.xy - uint2(0, 1)]) : zero3;
+    float3 sup = id.y < (size.y - 1) ? 
+        float3(magneticMomentumX[id.xy + uint2(0, 1)] + 0.5 * k1x[id.xy + uint2(0, 1)],
+               magneticMomentumY[id.xy + uint2(0, 1)] + 0.5 * k1y[id.xy + uint2(0, 1)],
+               magneticMomentumZ[id.xy + uint2(0, 1)] + 0.5 * k1z[id.xy + uint2(0, 1)]) : zero3;
+
+    float j_s = exchangeStrength[id.xy];
+    float j_left = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)] : 0.0f;
+    float j_down = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)] : 0.0f;
+
+    float d_s = D0 + D * j_s;
+    float d_left = id.x > 1 ? (D0 + D * j_left) : 0.0f;
+    float d_down = id.y > 1 ? (D0 + D * j_down) : 0.0f;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
+
+    //t is t + 0.5 dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 1) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
+
+    float3 k2res = timestep * newS;
+
+    k1x[id.xy + uint2(512, 0)] = k2res.x;
+    k1y[id.xy + uint2(512, 0)] = k2res.y;
+    k1z[id.xy + uint2(512, 0)] = k2res.z;
+}
+
+#pragma kernel CaclK3
+
+[numthreads(8, 8, 1)]
+void CaclK3(uint3 id : SV_DispatchThreadID)
+{
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    float3 s = float3(magneticMomentumX[id.xy] + 0.5 * k1x[id.xy + uint2(512, 0)],
+                      magneticMomentumY[id.xy] + 0.5 * k1y[id.xy + uint2(512, 0)],
+                      magneticMomentumZ[id.xy] + 0.5 * k1z[id.xy + uint2(512, 0)]);
+
+    float3 sleft = id.x > 1 ?
+        float3(magneticMomentumX[id.xy - uint2(1, 0)] + 0.5 * k1x[id.xy - uint2(1, 0) + uint2(512, 0)],
+               magneticMomentumY[id.xy - uint2(1, 0)] + 0.5 * k1y[id.xy - uint2(1, 0) + uint2(512, 0)],
+               magneticMomentumZ[id.xy - uint2(1, 0)] + 0.5 * k1z[id.xy - uint2(1, 0) + uint2(512, 0)]) : zero3;
+    float3 sright = id.x < (size.x - 1) ?
+        float3(magneticMomentumX[id.xy + uint2(1, 0)] + 0.5 * k1x[id.xy + uint2(1, 0) + uint2(512, 0)],
+               magneticMomentumY[id.xy + uint2(1, 0)] + 0.5 * k1y[id.xy + uint2(1, 0) + uint2(512, 0)],
+               magneticMomentumZ[id.xy + uint2(1, 0)] + 0.5 * k1z[id.xy + uint2(1, 0) + uint2(512, 0)]) : zero3;
+    float3 sdown = id.y > 1 ?
+        float3(magneticMomentumX[id.xy - uint2(0, 1)] + 0.5 * k1x[id.xy - uint2(0, 1) + uint2(512, 0)],
+               magneticMomentumY[id.xy - uint2(0, 1)] + 0.5 * k1y[id.xy - uint2(0, 1) + uint2(512, 0)],
+               magneticMomentumZ[id.xy - uint2(0, 1)] + 0.5 * k1z[id.xy - uint2(0, 1) + uint2(512, 0)]) : zero3;
+    float3 sup = id.y < (size.y - 1) ?
+        float3(magneticMomentumX[id.xy + uint2(0, 1)] + 0.5 * k1x[id.xy + uint2(0, 1) + uint2(512, 0)],
+               magneticMomentumY[id.xy + uint2(0, 1)] + 0.5 * k1y[id.xy + uint2(0, 1) + uint2(512, 0)],
+               magneticMomentumZ[id.xy + uint2(0, 1)] + 0.5 * k1z[id.xy + uint2(0, 1) + uint2(512, 0)]) : zero3;
+
+    float j_s = exchangeStrength[id.xy];
+    float j_left = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)] : 0.0f;
+    float j_down = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)] : 0.0f;
+
+    float d_s = D0 + D * j_s;
+    float d_left = id.x > 1 ? (D0 + D * j_left) : 0.0f;
+    float d_down = id.y > 1 ? (D0 + D * j_down) : 0.0f;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
+
+    //t is t + 0.5 dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 1) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
+
+    float3 k3res = timestep * newS;
+
+    k1x[id.xy + uint2(0, 512)] = k3res.x;
+    k1y[id.xy + uint2(0, 512)] = k3res.y;
+    k1z[id.xy + uint2(0, 512)] = k3res.z;
+}
+
+#pragma kernel CSMain
+
+//(0,0) is left buttom corner!
+//only change the name up to down, the result is unchanged...
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    //Calculate K4 first
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    float3 s = float3(magneticMomentumX[id.xy] + k1x[id.xy + uint2(0, 512)],
+                      magneticMomentumY[id.xy] + k1y[id.xy + uint2(0, 512)],
+                      magneticMomentumZ[id.xy] + k1z[id.xy + uint2(0, 512)]);
+
+    float3 sleft = id.x > 1 ?
+        float3(magneticMomentumX[id.xy - uint2(1, 0)] + k1x[id.xy - uint2(1, 0) + uint2(0, 512)],
+               magneticMomentumY[id.xy - uint2(1, 0)] + k1y[id.xy - uint2(1, 0) + uint2(0, 512)],
+               magneticMomentumZ[id.xy - uint2(1, 0)] + k1z[id.xy - uint2(1, 0) + uint2(0, 512)]) : zero3;
+    float3 sright = id.x < (size.x - 1) ?
+        float3(magneticMomentumX[id.xy + uint2(1, 0)] + k1x[id.xy + uint2(1, 0) + uint2(0, 512)],
+               magneticMomentumY[id.xy + uint2(1, 0)] + k1y[id.xy + uint2(1, 0) + uint2(0, 512)],
+               magneticMomentumZ[id.xy + uint2(1, 0)] + k1z[id.xy + uint2(1, 0) + uint2(0, 512)]) : zero3;
+    float3 sdown = id.y > 1 ?
+        float3(magneticMomentumX[id.xy - uint2(0, 1)] + k1x[id.xy - uint2(0, 1) + uint2(0, 512)],
+               magneticMomentumY[id.xy - uint2(0, 1)] + k1y[id.xy - uint2(0, 1) + uint2(0, 512)],
+               magneticMomentumZ[id.xy - uint2(0, 1)] + k1z[id.xy - uint2(0, 1) + uint2(0, 512)]) : zero3;
+    float3 sup = id.y < (size.y - 1) ?
+        float3(magneticMomentumX[id.xy + uint2(0, 1)] + k1x[id.xy + uint2(0, 1) + uint2(0, 512)],
+               magneticMomentumY[id.xy + uint2(0, 1)] + k1y[id.xy + uint2(0, 1) + uint2(0, 512)],
+               magneticMomentumZ[id.xy + uint2(0, 1)] + k1z[id.xy + uint2(0, 1) + uint2(0, 512)]) : zero3;
+
+    float j_s = exchangeStrength[id.xy];
+    float j_left = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)] : 0.0f;
+    float j_down = id.y > 1 ? exchangeStrength[id.xy - uint2(0, 1)] : 0.0f;
+
+    float d_s = D0 + D * j_s;
+    float d_left = id.x > 1 ? (D0 + D * j_left) : 0.0f;
+    float d_down = id.y > 1 ? (D0 + D * j_down) : 0.0f;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
+
+    //t is t + dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 2) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    //add time for jx current
+    jxstep = jxstep + 2;
+
+    float3 newS = cross(s, beff) + stt;
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
+
+    float3 k4res = timestep * newS;
+
+    k4res = (k4res + float3(k1x[id.xy], k1y[id.xy], k1z[id.xy]) + 
+        2.0 * float3(k1x[id.xy + uint2(512, 0)], k1y[id.xy + uint2(512, 0)], k1z[id.xy + uint2(512, 0)]) +
+        2.0 * float3(k1x[id.xy + uint2(0, 512)], k1y[id.xy + uint2(0, 512)], k1z[id.xy + uint2(0, 512)]))/6.0;
+    
+    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+
+    s = float3(magneticMomentumX[id.xy], magneticMomentumY[id.xy], magneticMomentumZ[id.xy]);
+    float3 retColor = edge < 0.5f ? zero3 : normalize(s + k4res);
+
+    magneticMomentumX[id.xy] = retColor.x * edge;
+    magneticMomentumY[id.xy] = retColor.y * edge;
+    magneticMomentumZ[id.xy] = retColor.z * edge;
 }

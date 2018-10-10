@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630) (preloaded format=pdflatex 2018.3.31)  12 SEP 2018 22:39
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (MiKTeX 2.9.6630) (preloaded format=pdflatex 2018.3.31)  11 OCT 2018 01:58
 entering extended mode
 **./readme.tex
 (readme.tex
@@ -558,6 +558,29 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 47.
 (D:\CTEX\MiKTeX\tex\latex\amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 ) [1{D:/CTEX/UserData/pdftex/config/pdftex.map{Unicode.sfd}{UGBK.sfd}}] [2] [3]
+Missing character: There is no ˆ in font cmbx9!
+Package epstopdf Info: Source file: <rk4test.eps>
+(epstopdf)                    date: 2018-10-11 01:52:45
+(epstopdf)                    size: 327299 bytes
+(epstopdf)             Output file: <rk4test-eps-converted-to.pdf>
+(epstopdf)                    date: 2018-10-11 01:54:39
+(epstopdf)                    size: 79091 bytes
+(epstopdf)             Command: <epstopdf --outfile=rk4test-eps-converted-to.pd
+f rk4test.eps>
+(epstopdf)             \includegraphics on input line 302.
+Package epstopdf Info: Output file is already uptodate.
+<rk4test-eps-converted-to.pdf, id=116, 598.235pt x 845.1575pt>
+File: rk4test-eps-converted-to.pdf Graphic file (type pdf)
+<use rk4test-eps-converted-to.pdf>
+Package pdftex.def Info: rk4test-eps-converted-to.pdf  used on input line 302.
+(pdftex.def)             Requested size: 538.40652pt x 760.63474pt.
+
+Overfull \hbox (28.40652pt too wide) in paragraph at lines 302--303
+ [][] 
+ []
+
+
+LaTeX Warning: Float too large for page by 123.63472pt on input line 304.
 
 (D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
@@ -567,8 +590,8 @@ File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
 (D:\CTEX\MiKTeX\tex\latex\listings\lstmisc.sty
 File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
-) [4] [5]
-(D:\CTEX\MiKTeX\tex\latex\listings\lstlang1.sty
+) [4] [5 <./rk4test-eps-converted-to.pdf>] [6] [7] [8] (D:\CTEX\MiKTeX\tex\late
+x\listings\lstlang1.sty
 File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
 (D:\CTEX\MiKTeX\tex\latex\listings\lstlang2.sty
@@ -591,18 +614,18 @@ File: lstlang1.sty 2015/06/04 1.6 listings language file
 )
 (D:\CTEX\MiKTeX\tex\latex\listings\lstlang2.sty
 File: lstlang2.sty 2015/06/04 1.6 listings language file
-)
-Underfull \hbox (badness 1371) in paragraph at lines 451--452
+) [9]
+Underfull \hbox (badness 1371) in paragraph at lines 654--655
 []\OT1/cmr/m/n/9 Hong Chul Choi, Shi-Zeng Lin, Jian-Xin Zhu, Phys. Rev. B 93, 1
 15112 (2016), 10.1103/Phys-RevB.93.115112,
  []
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 461.
-[6]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 461.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 667.
+[10]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 667.
  (readme.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 461.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 461.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 667.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 667.
 
 
 Package rerunfilecheck Warning: File `readme.out' has changed.
@@ -610,17 +633,17 @@ Package rerunfilecheck Warning: File `readme.out' has changed.
 (rerunfilecheck)                or use package `bookmark'.
 
 Package rerunfilecheck Info: Checksums for `readme.out':
-(rerunfilecheck)             Before: 7FEB434298945F3B144B4E23B9FDC69C;1551
-(rerunfilecheck)             After:  AC3915144F6BB42687194A8C85552E90;1206.
+(rerunfilecheck)             Before: 5B15A6B0203DA09B975EB8DA54FE5E75;1686
+(rerunfilecheck)             After:  97FE04AC61F66389B3373F12D61D6D43;1313.
  ) 
 Here is how much of TeX's memory you used:
- 14564 strings out of 493310
- 202308 string characters out of 3144686
- 1001552 words of memory out of 3000000
- 17789 multiletter control sequences out of 15000+200000
+ 14804 strings out of 493310
+ 205939 string characters out of 3144686
+ 1150676 words of memory out of 3000000
+ 17827 multiletter control sequences out of 15000+200000
  9775 words of font info for 37 fonts, out of 3000000 for 9000
  1144 hyphenation exceptions out of 8191
- 45i,17n,67p,344b,1835s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 45i,17n,67p,347b,1913s stack positions out of 5000i,500n,10000p,200000b,50000s
 <D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><D:/CTEX/MiKTeX/fon
 ts/type1/public/amsfonts/cm/cmbx12.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfo
 nts/cm/cmbx7.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx9.pfb><D:/C
@@ -633,9 +656,9 @@ D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><D:/CTEX/MiKTeX/fonts/ty
 pe1/public/amsfonts/cm/cmsy10.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/c
 m/cmsy7.pfb><D:/CTEX/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt8.pfb><D:/CTEX/M
 iKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on readme.pdf (6 pages, 231019 bytes).
+Output written on readme.pdf (10 pages, 349567 bytes).
 PDF statistics:
- 307 PDF objects out of 1000 (max. 8388607)
- 146 named destinations out of 1000 (max. 500000)
- 89 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 606 PDF objects out of 1000 (max. 8388607)
+ 346 named destinations out of 1000 (max. 500000)
+ 102 words of extra memory for PDF output out of 10000 (max. 10000000)
 
