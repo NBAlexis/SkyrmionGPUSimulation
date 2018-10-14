@@ -124,9 +124,9 @@ void CaclK2(uint3 id : SV_DispatchThreadID)
 
     float3 k2res = timestep * newS;
 
-    k1x[id.xy + uint2(512, 0)] = k2res.x;
-    k1y[id.xy + uint2(512, 0)] = k2res.y;
-    k1z[id.xy + uint2(512, 0)] = k2res.z;
+    k1x[id.xy + uint2(size[0], 0)] = k2res.x;
+    k1y[id.xy + uint2(size[0], 0)] = k2res.y;
+    k1z[id.xy + uint2(size[0], 0)] = k2res.z;
 }
 
 #pragma kernel CaclK3
@@ -136,26 +136,26 @@ void CaclK3(uint3 id : SV_DispatchThreadID)
 {
     float3 zero3 = float3(0.0f, 0.0f, 0.0f);
 
-    float3 s = float3(magneticMomentumX[id.xy] + 0.5 * k1x[id.xy + uint2(512, 0)],
-                      magneticMomentumY[id.xy] + 0.5 * k1y[id.xy + uint2(512, 0)],
-                      magneticMomentumZ[id.xy] + 0.5 * k1z[id.xy + uint2(512, 0)]);
+    float3 s = float3(magneticMomentumX[id.xy] + 0.5 * k1x[id.xy + uint2(size[0], 0)],
+                      magneticMomentumY[id.xy] + 0.5 * k1y[id.xy + uint2(size[0], 0)],
+                      magneticMomentumZ[id.xy] + 0.5 * k1z[id.xy + uint2(size[0], 0)]);
 
     float3 sleft = id.x > 1 ?
-        float3(magneticMomentumX[id.xy - uint2(1, 0)] + 0.5 * k1x[id.xy - uint2(1, 0) + uint2(512, 0)],
-               magneticMomentumY[id.xy - uint2(1, 0)] + 0.5 * k1y[id.xy - uint2(1, 0) + uint2(512, 0)],
-               magneticMomentumZ[id.xy - uint2(1, 0)] + 0.5 * k1z[id.xy - uint2(1, 0) + uint2(512, 0)]) : zero3;
+        float3(magneticMomentumX[id.xy - uint2(1, 0)] + 0.5 * k1x[id.xy - uint2(1, 0) + uint2(size[0], 0)],
+               magneticMomentumY[id.xy - uint2(1, 0)] + 0.5 * k1y[id.xy - uint2(1, 0) + uint2(size[0], 0)],
+               magneticMomentumZ[id.xy - uint2(1, 0)] + 0.5 * k1z[id.xy - uint2(1, 0) + uint2(size[0], 0)]) : zero3;
     float3 sright = id.x < (size.x - 1) ?
-        float3(magneticMomentumX[id.xy + uint2(1, 0)] + 0.5 * k1x[id.xy + uint2(1, 0) + uint2(512, 0)],
-               magneticMomentumY[id.xy + uint2(1, 0)] + 0.5 * k1y[id.xy + uint2(1, 0) + uint2(512, 0)],
-               magneticMomentumZ[id.xy + uint2(1, 0)] + 0.5 * k1z[id.xy + uint2(1, 0) + uint2(512, 0)]) : zero3;
+        float3(magneticMomentumX[id.xy + uint2(1, 0)] + 0.5 * k1x[id.xy + uint2(1, 0) + uint2(size[0], 0)],
+               magneticMomentumY[id.xy + uint2(1, 0)] + 0.5 * k1y[id.xy + uint2(1, 0) + uint2(size[0], 0)],
+               magneticMomentumZ[id.xy + uint2(1, 0)] + 0.5 * k1z[id.xy + uint2(1, 0) + uint2(size[0], 0)]) : zero3;
     float3 sdown = id.y > 1 ?
-        float3(magneticMomentumX[id.xy - uint2(0, 1)] + 0.5 * k1x[id.xy - uint2(0, 1) + uint2(512, 0)],
-               magneticMomentumY[id.xy - uint2(0, 1)] + 0.5 * k1y[id.xy - uint2(0, 1) + uint2(512, 0)],
-               magneticMomentumZ[id.xy - uint2(0, 1)] + 0.5 * k1z[id.xy - uint2(0, 1) + uint2(512, 0)]) : zero3;
+        float3(magneticMomentumX[id.xy - uint2(0, 1)] + 0.5 * k1x[id.xy - uint2(0, 1) + uint2(size[0], 0)],
+               magneticMomentumY[id.xy - uint2(0, 1)] + 0.5 * k1y[id.xy - uint2(0, 1) + uint2(size[0], 0)],
+               magneticMomentumZ[id.xy - uint2(0, 1)] + 0.5 * k1z[id.xy - uint2(0, 1) + uint2(size[0], 0)]) : zero3;
     float3 sup = id.y < (size.y - 1) ?
-        float3(magneticMomentumX[id.xy + uint2(0, 1)] + 0.5 * k1x[id.xy + uint2(0, 1) + uint2(512, 0)],
-               magneticMomentumY[id.xy + uint2(0, 1)] + 0.5 * k1y[id.xy + uint2(0, 1) + uint2(512, 0)],
-               magneticMomentumZ[id.xy + uint2(0, 1)] + 0.5 * k1z[id.xy + uint2(0, 1) + uint2(512, 0)]) : zero3;
+        float3(magneticMomentumX[id.xy + uint2(0, 1)] + 0.5 * k1x[id.xy + uint2(0, 1) + uint2(size[0], 0)],
+               magneticMomentumY[id.xy + uint2(0, 1)] + 0.5 * k1y[id.xy + uint2(0, 1) + uint2(size[0], 0)],
+               magneticMomentumZ[id.xy + uint2(0, 1)] + 0.5 * k1z[id.xy + uint2(0, 1) + uint2(size[0], 0)]) : zero3;
 
     float j_s = exchangeStrength[id.xy];
     float j_left = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)] : 0.0f;
@@ -181,9 +181,9 @@ void CaclK3(uint3 id : SV_DispatchThreadID)
 
     float3 k3res = timestep * newS;
 
-    k1x[id.xy + uint2(0, 512)] = k3res.x;
-    k1y[id.xy + uint2(0, 512)] = k3res.y;
-    k1z[id.xy + uint2(0, 512)] = k3res.z;
+    k1x[id.xy + uint2(0, size[1])] = k3res.x;
+    k1y[id.xy + uint2(0, size[1])] = k3res.y;
+    k1z[id.xy + uint2(0, size[1])] = k3res.z;
 }
 
 #pragma kernel CSMain
@@ -196,26 +196,26 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     //Calculate K4 first
     float3 zero3 = float3(0.0f, 0.0f, 0.0f);
 
-    float3 s = float3(magneticMomentumX[id.xy] + k1x[id.xy + uint2(0, 512)],
-                      magneticMomentumY[id.xy] + k1y[id.xy + uint2(0, 512)],
-                      magneticMomentumZ[id.xy] + k1z[id.xy + uint2(0, 512)]);
+    float3 s = float3(magneticMomentumX[id.xy] + k1x[id.xy + uint2(0, size[1])],
+                      magneticMomentumY[id.xy] + k1y[id.xy + uint2(0, size[1])],
+                      magneticMomentumZ[id.xy] + k1z[id.xy + uint2(0, size[1])]);
 
     float3 sleft = id.x > 1 ?
-        float3(magneticMomentumX[id.xy - uint2(1, 0)] + k1x[id.xy - uint2(1, 0) + uint2(0, 512)],
-               magneticMomentumY[id.xy - uint2(1, 0)] + k1y[id.xy - uint2(1, 0) + uint2(0, 512)],
-               magneticMomentumZ[id.xy - uint2(1, 0)] + k1z[id.xy - uint2(1, 0) + uint2(0, 512)]) : zero3;
+        float3(magneticMomentumX[id.xy - uint2(1, 0)] + k1x[id.xy - uint2(1, 0) + uint2(0, size[1])],
+               magneticMomentumY[id.xy - uint2(1, 0)] + k1y[id.xy - uint2(1, 0) + uint2(0, size[1])],
+               magneticMomentumZ[id.xy - uint2(1, 0)] + k1z[id.xy - uint2(1, 0) + uint2(0, size[1])]) : zero3;
     float3 sright = id.x < (size.x - 1) ?
-        float3(magneticMomentumX[id.xy + uint2(1, 0)] + k1x[id.xy + uint2(1, 0) + uint2(0, 512)],
-               magneticMomentumY[id.xy + uint2(1, 0)] + k1y[id.xy + uint2(1, 0) + uint2(0, 512)],
-               magneticMomentumZ[id.xy + uint2(1, 0)] + k1z[id.xy + uint2(1, 0) + uint2(0, 512)]) : zero3;
+        float3(magneticMomentumX[id.xy + uint2(1, 0)] + k1x[id.xy + uint2(1, 0) + uint2(0, size[1])],
+               magneticMomentumY[id.xy + uint2(1, 0)] + k1y[id.xy + uint2(1, 0) + uint2(0, size[1])],
+               magneticMomentumZ[id.xy + uint2(1, 0)] + k1z[id.xy + uint2(1, 0) + uint2(0, size[1])]) : zero3;
     float3 sdown = id.y > 1 ?
-        float3(magneticMomentumX[id.xy - uint2(0, 1)] + k1x[id.xy - uint2(0, 1) + uint2(0, 512)],
-               magneticMomentumY[id.xy - uint2(0, 1)] + k1y[id.xy - uint2(0, 1) + uint2(0, 512)],
-               magneticMomentumZ[id.xy - uint2(0, 1)] + k1z[id.xy - uint2(0, 1) + uint2(0, 512)]) : zero3;
+        float3(magneticMomentumX[id.xy - uint2(0, 1)] + k1x[id.xy - uint2(0, 1) + uint2(0, size[1])],
+               magneticMomentumY[id.xy - uint2(0, 1)] + k1y[id.xy - uint2(0, 1) + uint2(0, size[1])],
+               magneticMomentumZ[id.xy - uint2(0, 1)] + k1z[id.xy - uint2(0, 1) + uint2(0, size[1])]) : zero3;
     float3 sup = id.y < (size.y - 1) ?
-        float3(magneticMomentumX[id.xy + uint2(0, 1)] + k1x[id.xy + uint2(0, 1) + uint2(0, 512)],
-               magneticMomentumY[id.xy + uint2(0, 1)] + k1y[id.xy + uint2(0, 1) + uint2(0, 512)],
-               magneticMomentumZ[id.xy + uint2(0, 1)] + k1z[id.xy + uint2(0, 1) + uint2(0, 512)]) : zero3;
+        float3(magneticMomentumX[id.xy + uint2(0, 1)] + k1x[id.xy + uint2(0, 1) + uint2(0, size[1])],
+               magneticMomentumY[id.xy + uint2(0, 1)] + k1y[id.xy + uint2(0, 1) + uint2(0, size[1])],
+               magneticMomentumZ[id.xy + uint2(0, 1)] + k1z[id.xy + uint2(0, 1) + uint2(0, size[1])]) : zero3;
 
     float j_s = exchangeStrength[id.xy];
     float j_left = id.x > 1 ? exchangeStrength[id.xy - uint2(1, 0)] : 0.0f;
@@ -245,8 +245,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 k4res = timestep * newS;
 
     k4res = (k4res + float3(k1x[id.xy], k1y[id.xy], k1z[id.xy]) + 
-        2.0 * float3(k1x[id.xy + uint2(512, 0)], k1y[id.xy + uint2(512, 0)], k1z[id.xy + uint2(512, 0)]) +
-        2.0 * float3(k1x[id.xy + uint2(0, 512)], k1y[id.xy + uint2(0, 512)], k1z[id.xy + uint2(0, 512)]))/6.0;
+        2.0 * float3(k1x[id.xy + uint2(size[0], 0)], k1y[id.xy + uint2(size[0], 0)], k1z[id.xy + uint2(size[0], 0)]) +
+        2.0 * float3(k1x[id.xy + uint2(0, size[1])], k1y[id.xy + uint2(0, size[1])], k1z[id.xy + uint2(0, size[1])]))/6.0;
     
     float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
 

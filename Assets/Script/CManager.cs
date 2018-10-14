@@ -86,15 +86,15 @@ public class CManager : MonoBehaviour
 
     private void CalculateStdDev()
     {
-        RenderTexture rt = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB32);
+        RenderTexture rt = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.ARGB32);
 
         MatGetXYZ.SetTexture("_Nx", InternalRTR);
         MatGetXYZ.SetTexture("_Ny", InternalRTG);
         MatGetXYZ.SetTexture("_Nz", InternalRTB);
         Graphics.Blit(null, rt, MatGetXYZ);
-        Texture2D dataReader = new Texture2D(512, 512, TextureFormat.ARGB32, false);
+        Texture2D dataReader = new Texture2D(m_iResolution, m_iResolution, TextureFormat.ARGB32, false);
         RenderTexture.active = rt;
-        dataReader.ReadPixels(new Rect(0, 0, 512, 512), 0, 0);
+        dataReader.ReadPixels(new Rect(0, 0, m_iResolution, m_iResolution), 0, 0);
         dataReader.Apply();
         RenderTexture.active = null;
         rt.Release();
@@ -113,16 +113,16 @@ public class CManager : MonoBehaviour
         }
 
         double err = 0.0f;
-        for (int i = 0; i < 512; ++i)
+        for (int i = 0; i < m_iResolution; ++i)
         {
-            for (int j = 0; j < 512; ++j)
+            for (int j = 0; j < m_iResolution; ++j)
             {
                 Color c1 = PreData.GetPixel(i, j);
                 Color c2 = dataReader.GetPixel(i, j);
                 err += new Vector3(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b).sqrMagnitude;
             }
         }
-        err = err/(Mathf.Sqrt(512*512 - 1)* m_fTimeStep);
+        err = err/(Mathf.Sqrt(m_iResolution * m_iResolution - 1)* m_fTimeStep);
 
         m_lstStdDevRes.Add(string.Format("step{0}:\n{1}\n", m_iFrame, err));
         if (m_lstStdDevRes.Count > 80)
@@ -145,6 +145,17 @@ public class CManager : MonoBehaviour
 
     #endregion
 
+    #region Resolution
+
+    public InputField InputResolution;
+    public Button BtResolution;
+    public Text TxtResolution;
+
+    [HideInInspector]
+    public int m_iResolution = 512;
+
+    #endregion
+
     private Texture2D m_pTestT2;
     private int m_iFrame = 0;
     private int m_iStopFrame = -1;
@@ -159,7 +170,7 @@ public class CManager : MonoBehaviour
     private bool m_bInverseNz = false;
     private bool m_bJxPeroidSet = false;
 
-    private static readonly Color[] _color512 = new Color[512 * 512];
+    private static Color[] _color512 = new Color[512 * 512];
 
     //private float m_fShowSep = 0.3f;
     //private float m_fShowSepTicker = 0.0f;
@@ -186,15 +197,26 @@ public class CManager : MonoBehaviour
         m_iK2Handle = CmpShader.FindKernel("CaclK2");
         m_iK3Handle = CmpShader.FindKernel("CaclK3");
         m_iKernelHandle = CmpShader.FindKernel("CSMain");
-        CmpShader.SetInts("size", new int[] { 512, 512 });
 
-        K1X = new RenderTexture(1024, 1024, 0, RenderTextureFormat.RFloat);
+        BuildInitialTexture(512);
+
+        Bt.GetComponentInChildren<Text>().text = "Start";
+
+        //ShowRT = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.sRGB);
+        //OutPutSingle.texture = ShowRT;
+    }
+
+    private void BuildInitialTexture(int iRes)
+    {
+        CmpShader.SetInts("size", new int[] { iRes, iRes });
+
+        K1X = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat);
         K1X.enableRandomWrite = true;
         K1X.Create();
-        K1Y = new RenderTexture(1024, 1024, 0, RenderTextureFormat.RFloat);
+        K1Y = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat);
         K1Y.enableRandomWrite = true;
         K1Y.Create();
-        K1Z = new RenderTexture(1024, 1024, 0, RenderTextureFormat.RFloat);
+        K1Z = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat);
         K1Z.enableRandomWrite = true;
         K1Z.Create();
 
@@ -213,12 +235,6 @@ public class CManager : MonoBehaviour
         CmpShader.SetTexture(m_iKernelHandle, "k1x", K1X);
         CmpShader.SetTexture(m_iKernelHandle, "k1y", K1Y);
         CmpShader.SetTexture(m_iKernelHandle, "k1z", K1Z);
-
-
-        Bt.GetComponentInChildren<Text>().text = "Start";
-
-        //ShowRT = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.sRGB);
-        //OutPutSingle.texture = ShowRT;
     }
 	
 	// Update is called once per frame
@@ -226,10 +242,10 @@ public class CManager : MonoBehaviour
     {
 	    if (m_bRunning)
 	    {
-            CmpShader.Dispatch(m_iK1Handle, 512 / 8, 512 / 8, 1);
-            CmpShader.Dispatch(m_iK2Handle, 512 / 8, 512 / 8, 1);
-            CmpShader.Dispatch(m_iK3Handle, 512 / 8, 512 / 8, 1);
-            CmpShader.Dispatch(m_iKernelHandle, 512 / 8, 512 / 8, 1);
+            CmpShader.Dispatch(m_iK1Handle, m_iResolution / 8, m_iResolution / 8, 1);
+            CmpShader.Dispatch(m_iK2Handle, m_iResolution / 8, m_iResolution / 8, 1);
+            CmpShader.Dispatch(m_iK3Handle, m_iResolution / 8, m_iResolution / 8, 1);
+            CmpShader.Dispatch(m_iKernelHandle, m_iResolution / 8, m_iResolution / 8, 1);
 
             ++m_iFrame;
             FrameCount.text = m_iFrame.ToString();
@@ -241,7 +257,12 @@ public class CManager : MonoBehaviour
             //    Graphics.Blit(null, ShowRT, GetXYZ);
 	        //}
 
-	        if (StandardDevationToggle.isOn)
+	        if (StandardDevationToggle.isOn || 
+                    (m_iSaveFrame > 0 && 
+                     (0 == (m_iFrame % m_iSaveFrame)
+                     || (m_iSaveFrame - 1) == (m_iFrame % m_iSaveFrame))
+                    )
+               )
 	        {
 	            CalculateStdDev();
 	        }
@@ -282,6 +303,7 @@ public class CManager : MonoBehaviour
             MagButton.interactable = true;
             JxButton.interactable = true;
             RemoveJxButton.interactable = true;
+            BtResolution.interactable = true;
         }
         else
         {
@@ -302,6 +324,7 @@ public class CManager : MonoBehaviour
             MagButton.interactable = false;
             JxButton.interactable = false;
             RemoveJxButton.interactable = false;
+            BtResolution.interactable = false;
 
             CmpShader.SetFloat("K", float.Parse(K.text));
             CmpShader.SetFloat("D", float.Parse(D.text));
@@ -464,6 +487,7 @@ public class CManager : MonoBehaviour
         CExportData.Save(sDate, iStep, 
             string.Format(@"
 start time={0}
+grid={13}x{13}
 step={1}
 exchange strength J value={2}
 initla magnetic={3}
@@ -473,7 +497,8 @@ K={6}
 D={7} + J * {8}
 B={9}
 Gilbert alpha={10}
-time step={11}",
+time step={11}
+last standard deviation/delta time={12}",
             m_dtSim.ToString("MM-dd-yyyy hh:mm:ss"),
             m_iFrame,
             JButtonName.text,
@@ -485,13 +510,17 @@ time step={11}",
             D.text,
             B.text,
             alpha.text,
-            m_fTimeStep
+            m_fTimeStep,
+            m_lstStdDevRes.Count > 0 ? m_lstStdDevRes[m_lstStdDevRes.Count - 1] : "Not Recorded",
+            m_iResolution
             ), 
+            m_iResolution,
             InternalRTR,
             InternalRTG,
             InternalRTB,
             MatShow,
-            MatGetXYZ);
+            MatGetXYZ
+            );
     }
 
     public void ResetBt()
@@ -507,7 +536,9 @@ time step={11}",
         OutPutSingle.material.SetFloat("_InverseNz", m_bInverseNz ? 1.0f : 0.0f);
     }
 
-    private static readonly Vector3[] _mags = new Vector3[512 * 512];
+    #region Load Magnetic
+
+    private static Vector3[] _mags = new Vector3[512 * 512];
     private bool LoadManetic(string sLuaFileName)
     {
         Util.ClearMemory();
@@ -522,9 +553,9 @@ time step={11}",
             return false;
         }
 
-        for (int x = 0; x < 512; ++x)
+        for (int x = 0; x < m_iResolution; ++x)
         {
-            for (int y = 0; y < 512; ++y)
+            for (int y = 0; y < m_iResolution; ++y)
             {
                 object[] r = func.Call2(x, y);
                 if (3 != r.Length 
@@ -537,7 +568,7 @@ time step={11}",
                     return false;
                 }
 
-                _mags[y * 512 + x] = new Vector3(
+                _mags[y * m_iResolution + x] = new Vector3(
                     (float)(double)r[0], 
                     (float)(double)r[1], 
                     (float)(double)r[2]);
@@ -549,36 +580,36 @@ time step={11}",
     }
 
     private Texture2D _txR, _txG, _txB;
-    private readonly Color[] _txcR = new Color[512 * 512];
-    private readonly Color[] _txcG = new Color[512 * 512];
-    private readonly Color[] _txcB = new Color[512 * 512];
+    private static Color[] _txcR = new Color[512 * 512];
+    private static Color[] _txcG = new Color[512 * 512];
+    private static Color[] _txcB = new Color[512 * 512];
 
     private bool LoadMagneticPic(string sPicFileName)
     {
-        if (null == m_pTestT2)
+        if (null == m_pTestT2 || m_iResolution != m_pTestT2.width)
         {
-            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGBA32, false);
         }
         if (!m_pTestT2.LoadImage(File.ReadAllBytes(sPicFileName), false))
         {
             ShowErrorMessage("Not support this file format.");
-            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGBA32, false);
             return false;
         }
 
-        if (512 != m_pTestT2.width || 512 != m_pTestT2.height)
+        if (m_iResolution != m_pTestT2.width || m_iResolution != m_pTestT2.height)
         {
-            ShowErrorMessage("Only support 512 x 512 file.");
-            m_pTestT2 = new Texture2D(512, 512, TextureFormat.RGBA32, false);
+            ShowErrorMessage(string.Format("Only support {0} x {0} file.", m_iResolution));
+            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGBA32, false);
             return false;
         }
 
-        for (int x = 0; x < 512; ++x)
+        for (int x = 0; x < m_iResolution; ++x)
         {
-            for (int y = 0; y < 512; ++y)
+            for (int y = 0; y < m_iResolution; ++y)
             {
                 Color c = m_pTestT2.GetPixel(x, y);
-                _mags[y*512 + x] = new Vector3(2.0f*c.r - 1.0f, 2.0f*c.g - 1.0f, 2.0f*c.b - 1.0f);
+                _mags[y* m_iResolution + x] = new Vector3(2.0f*c.r - 1.0f, 2.0f*c.g - 1.0f, 2.0f*c.b - 1.0f);
             }
         }
 
@@ -589,20 +620,20 @@ time step={11}",
 
     private void SetCurrentState(Vector3[] magnetic)
     {
-        if (null == _txR)
+        if (null == _txR || m_iResolution != _txR.width)
         {
-            _txR = new Texture2D(512, 512, TextureFormat.RFloat, false);
+            _txR = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false);
         }
-        if (null == _txG)
+        if (null == _txG || m_iResolution != _txG.width)
         {
-            _txG = new Texture2D(512, 512, TextureFormat.RFloat, false);
+            _txG = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false);
         }
-        if (null == _txB)
+        if (null == _txB || m_iResolution != _txB.width)
         {
-            _txB = new Texture2D(512, 512, TextureFormat.RFloat, false);
+            _txB = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false);
         }
 
-        for (int i = 0; i < 512 * 512; ++i)
+        for (int i = 0; i < m_iResolution * m_iResolution; ++i)
         {
             magnetic[i].Normalize();
             _txcR[i] = new Color(magnetic[i].x, 0.0f, 0.0f);
@@ -619,21 +650,21 @@ time step={11}",
 
         if (null == InternalRTR)
         {
-            InternalRTR = new RenderTexture(512, 512, 0, RenderTextureFormat.RFloat);
+            InternalRTR = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat);
             InternalRTR.enableRandomWrite = true;
             InternalRTR.Create();
             OutPutSingle.material.SetTexture("_Nx", InternalRTR);
         }
         if (null == InternalRTG)
         {
-            InternalRTG = new RenderTexture(512, 512, 0, RenderTextureFormat.RFloat);
+            InternalRTG = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat);
             InternalRTG.enableRandomWrite = true;
             InternalRTG.Create();
             OutPutSingle.material.SetTexture("_Ny", InternalRTG);
         }
         if (null == InternalRTB)
         {
-            InternalRTB = new RenderTexture(512, 512, 0, RenderTextureFormat.RFloat);
+            InternalRTB = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat);
             InternalRTB.enableRandomWrite = true;
             InternalRTB.Create();
             OutPutSingle.material.SetTexture("_Nz", InternalRTB);
@@ -660,7 +691,11 @@ time step={11}",
         //Graphics.Blit(null, ShowRT, GetXYZ);
     }
 
-    private static readonly float[] _jvalues = new float[512 * 512];
+    #endregion
+
+    #region Load J Value
+
+    private static float[] _jvalues = new float[512 * 512];
     private bool LoadJValue(string sLuaFileName)
     {
         Util.ClearMemory();
@@ -675,9 +710,9 @@ time step={11}",
             return false;
         }
 
-        for (int x = 0; x < 512; ++x)
+        for (int x = 0; x < m_iResolution; ++x)
         {
-            for (int y = 0; y < 512; ++y)
+            for (int y = 0; y < m_iResolution; ++y)
             {
                 object[] r = func.Call2(x, y);
                 if (1 != r.Length || !(r[0] is double))
@@ -686,7 +721,7 @@ time step={11}",
                     mgr.Destroy();
                     return false;
                 }
-                _jvalues[y * 512 + x] = (float)(double)r[0];
+                _jvalues[y * m_iResolution + x] = (float)(double)r[0];
             }
         }
         mgr.Destroy();
@@ -696,12 +731,12 @@ time step={11}",
 
     private void SetJTexture(float[] js)
     {
-        if (null == JTexture)
+        if (null == JTexture || m_iResolution != JTexture.width)
         {
-            JTexture = new Texture2D(512, 512, TextureFormat.RFloat, false);
+            JTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false);
         }
 
-        for (int i = 0; i < 512 * 512; ++i)
+        for (int i = 0; i < m_iResolution * m_iResolution; ++i)
         {
             _color512[i] = new Color(js[i], 0.0f, 0.0f);
         }
@@ -714,12 +749,16 @@ time step={11}",
         CmpShader.SetTexture(m_iKernelHandle, "exchangeStrength", JTexture);
     }
 
+    #endregion
+
+    #region Load Boundary Condition
+
     private Texture2D _theEdgeTexture = null;
     private bool SetEdge(string sPNGFileName)
     {
-        if (null == _theEdgeTexture)
+        if (null == _theEdgeTexture || m_iResolution != _theEdgeTexture.width)
         {
-            _theEdgeTexture = new Texture2D(512, 512, TextureFormat.Alpha8, false);
+            _theEdgeTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.Alpha8, false);
         }
         if (!_theEdgeTexture.LoadImage(File.ReadAllBytes(sPNGFileName), true))
         {
@@ -727,14 +766,16 @@ time step={11}",
             return false;
         }
 
-        if (512 != _theEdgeTexture.width || 512 != _theEdgeTexture.height)
+        if (m_iResolution != _theEdgeTexture.width || m_iResolution != _theEdgeTexture.height)
         {
-            ShowErrorMessage("Only support 512 x 512 file.");
+            ShowErrorMessage(string.Format("Only support {0} x {0} file.", m_iResolution));
             return false;
         }
         CmpShader.SetTexture(m_iKernelHandle, "boundaryCondition", _theEdgeTexture);
         return true;
     }
+
+    #endregion
 
     private bool LoadJXValue(string sLuaFileName)
     {
@@ -843,7 +884,50 @@ time step={11}",
         m_bMsgShow = true;
     }
 
-#region Old GUI MessageBox
+    #region Change Resolution
+
+    private void ChangeResolution(int iNewResolution)
+    {
+        m_iResolution = iNewResolution;
+        _color512 = new Color[iNewResolution * iNewResolution];
+        _txcR = new Color[iNewResolution * iNewResolution];
+        _txcG = new Color[iNewResolution * iNewResolution];
+        _txcB = new Color[iNewResolution * iNewResolution];
+        _mags = new Vector3[iNewResolution * iNewResolution];
+        _jvalues = new float[iNewResolution * iNewResolution];
+
+        BuildInitialTexture(iNewResolution);
+
+        m_bJSet = false;
+        m_bMagSet = false;
+        m_bCondSet = false;
+    }
+
+    public void OnButtonResolution()
+    {
+        int iNewRes = 1;
+        if (!int.TryParse(InputResolution.text, out iNewRes))
+        {
+            ShowErrorMessage("New resolution must be 512,1024,2048 and different from now.");
+        }
+
+        if (m_iResolution == iNewRes)
+        {
+            ShowErrorMessage("New resolution must be 512,1024,2048 and different from now.");
+        }
+
+        if (512 != iNewRes && 1024 != iNewRes && 2048 != iNewRes)
+        {
+            ShowErrorMessage("New resolution must be 512,1024,2048 and different from now.");
+        }
+
+        ChangeResolution(iNewRes);
+        TxtResolution.text = string.Format("Change size(now={0}x{0})", iNewRes);
+    }
+
+    #endregion
+
+    #region Old GUI MessageBox
 
     private Rect m_rcWindowRect = new Rect(Screen.width * 0.05f, Screen.height * 0.05f, Screen.width * 0.9f, Screen.height * 0.9f);
     private bool m_bMsgShow = false;

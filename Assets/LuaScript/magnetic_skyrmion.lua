@@ -1,5 +1,5 @@
 
--- Initial the magnetic by random
+-- Initial the magnetic by a skyrmion
 function GetMagneticByLatticeIndex(x, y)
     -- skyrmion at position 255, 255
     local rho = (x - 255) * (x - 255) + (y - 255) * (y- 255)

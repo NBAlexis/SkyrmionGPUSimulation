@@ -9,4 +9,4 @@ UnityStandaloneFileBrowser: https://github.com/gkngkc/UnityStandaloneFileBrowser
 
 Build it using Mono other than IL2CPP because of UnityStandaloneFileBrowser
 
-Shuold work with platform other than Windows.
+Shuold work with platform other than Windows. For windows, need DX11.

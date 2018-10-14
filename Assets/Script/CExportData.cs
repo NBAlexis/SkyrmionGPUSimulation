@@ -15,7 +15,7 @@ public static class CExportData
         //public string m_sNz;
     }
 
-    public static void Save(string sDate, int iStep, string profile, 
+    public static void Save(string sDate, int iStep, string profile, int iRes,
         RenderTexture datax,
         RenderTexture datay,
         RenderTexture dataz,
@@ -29,7 +29,7 @@ public static class CExportData
 
         string sProf = Application.dataPath + CManager._outfolder + "Output/" + sTag + "_prof.txt";
 
-        SGetData builtRes = BuildMap(datax, datay, dataz, matShow, matRaw);
+        SGetData builtRes = BuildMap(iRes, datax, datay, dataz, matShow, matRaw);
 
         byte[] byDataRaw = builtRes.m_txRaw.EncodeToPNG();
         File.WriteAllBytes(sPathImag1, byDataRaw);
@@ -44,29 +44,29 @@ public static class CExportData
 
     }
 
-    private static SGetData BuildMap(RenderTexture datax, RenderTexture datay, RenderTexture dataz, Material matShow, Material matRaw)
+    private static SGetData BuildMap(int iRes, RenderTexture datax, RenderTexture datay, RenderTexture dataz, Material matShow, Material matRaw)
     {
-        RenderTexture rt = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB32);
+        RenderTexture rt = new RenderTexture(iRes, iRes, 0, RenderTextureFormat.ARGB32);
 
         matRaw.SetTexture("_Nx", datax);
         matRaw.SetTexture("_Ny", datay);
         matRaw.SetTexture("_Nz", dataz);
         Graphics.Blit(null, rt, matRaw);
-        Texture2D dataReader = new Texture2D(512, 512, TextureFormat.ARGB32, false);
+        Texture2D dataReader = new Texture2D(iRes, iRes, TextureFormat.ARGB32, false);
         RenderTexture.active = rt;
-        dataReader.ReadPixels(new Rect(0, 0, 512, 512), 0, 0);
+        dataReader.ReadPixels(new Rect(0, 0, iRes, iRes), 0, 0);
         dataReader.Apply();
         RenderTexture.active = null;
         rt.Release();
 
-        RenderTexture rtshow = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB32);
+        RenderTexture rtshow = new RenderTexture(iRes, iRes, 0, RenderTextureFormat.ARGB32);
         matShow.SetTexture("_Nx", datax);
         matShow.SetTexture("_Ny", datay);
         matShow.SetTexture("_Nz", dataz);
         Graphics.Blit(null, rtshow, matShow);
-        Texture2D imgShow = new Texture2D(512, 512, TextureFormat.ARGB32, false);
+        Texture2D imgShow = new Texture2D(iRes, iRes, TextureFormat.ARGB32, false);
         RenderTexture.active = rtshow;
-        imgShow.ReadPixels(new Rect(0, 0, 512, 512), 0, 0);
+        imgShow.ReadPixels(new Rect(0, 0, iRes, iRes), 0, 0);
         imgShow.Apply();
         RenderTexture.active = null;
         rtshow.Release();
@@ -98,12 +98,13 @@ public static class CExportData
         //ny.Release();
         //nz.Release();
 
-        Texture2D retData = new Texture2D(1023, 1023, TextureFormat.RGB24, false, false);
+        int iLRes = iRes*2 - 1;
+        Texture2D retData = new Texture2D(iLRes, iLRes, TextureFormat.RGB24, false, false);
         //string sNx = "", sNy = "", sNz = "";
 
-        for (int i = 0; i < 1023; ++i)
+        for (int i = 0; i < iLRes; ++i)
         {
-            for (int j = 0; j < 1023; ++j)
+            for (int j = 0; j < iLRes; ++j)
             {
                 if (0 == (i & 1) && 0 == (j & 1))
                 {
@@ -142,10 +143,11 @@ public static class CExportData
         }
 
         float fNXYMax = 0.0f;
-        Vector2[,] v2N = new Vector2[64, 64];
-        for (int i = 0; i < 64; ++i)
+        int iSRes = iRes/8;
+        Vector2[,] v2N = new Vector2[iSRes, iSRes];
+        for (int i = 0; i < iSRes; ++i)
         {
-            for (int j = 0; j < 64; ++j)
+            for (int j = 0; j < iSRes; ++j)
             {
                 //get data from 8 x 8 grid
                 Vector2 v2Nt = Vector2.zero;
@@ -157,7 +159,7 @@ public static class CExportData
                         v2Nt += new Vector2(c.r * 2.0f - 1.0f, c.g * 2.0f - 1.0f);
                     }
                 }
-                v2N[i, j] = v2Nt / 64.0f;
+                v2N[i, j] = v2Nt / (float)iSRes;
                 if (Mathf.Abs(v2N[i, j].x) > fNXYMax)
                 {
                     fNXYMax = Mathf.Abs(v2N[i, j].x);
@@ -169,11 +171,12 @@ public static class CExportData
             }
         }
 
-        for (int i = 0; i < 64; ++i)
+        for (int i = 0; i < iSRes; ++i)
         {
-            for (int j = 0; j < 64; ++j)
+            for (int j = 0; j < iSRes; ++j)
             {
-                DrawArrow(8 + 16 * i, 8 + 16 * j, 
+                DrawArrow(iLRes, 
+                    8 + 16 * i, 8 + 16 * j, 
                     Mathf.RoundToInt(v2N[i, j].x * 8.0f / fNXYMax), 
                     Mathf.RoundToInt(v2N[i, j].y * 8.0f / fNXYMax), retData);
             }
@@ -192,7 +195,7 @@ public static class CExportData
     }
 
     private static readonly Color dark = new Color(0.25f, 0.25f, 0.25f);
-    private static void DrawArrow(int gridX, int gridY, int nx, int ny, Texture2D canv)
+    private static void DrawArrow(int iMax, int gridX, int gridY, int nx, int ny, Texture2D canv)
     {
         if (0 == nx && 0 == ny)
         {
@@ -209,9 +212,9 @@ public static class CExportData
                 int iTargetY = Mathf.RoundToInt(iSign*i*ny/(float) nx) + gridY;
 
                 if (iTargetX > 0
-                 && iTargetX < 1023
+                 && iTargetX < iMax
                  && iTargetY > 0
-                 && iTargetY < 1023)
+                 && iTargetY < iMax)
                 {
                     canv.SetPixel(iTargetX, iTargetY, 0 == i ? Color.black : dark);
                 }
@@ -226,9 +229,9 @@ public static class CExportData
                 int iTargetX = Mathf.RoundToInt(iSign * i * nx / (float)ny) + gridX;
 
                 if (iTargetX > 0
-                 && iTargetX < 1023
+                 && iTargetX < iMax
                  && iTargetY > 0
-                 && iTargetY < 1023)
+                 && iTargetY < iMax)
                 {
                     canv.SetPixel(iTargetX, iTargetY, 0 == i ? Color.black : dark);
                 }
