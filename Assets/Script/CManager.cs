@@ -46,6 +46,7 @@ public class CManager : MonoBehaviour
     public Material MatGetXYZ;
 
     public Toggle ToggleInverseNz;
+    public Toggle TogglePeriodic;
 
     #endregion
 
@@ -56,6 +57,13 @@ public class CManager : MonoBehaviour
     private int m_iK2Handle;
     private int m_iK3Handle;
     private int m_iKernelHandle;
+
+    private int m_iK1HandleP;
+    private int m_iK2HandleP;
+    private int m_iK3HandleP;
+    private int m_iKernelHandleP;
+
+    private int m_iJxStep = 0;
 
     #endregion
 
@@ -166,6 +174,7 @@ public class CManager : MonoBehaviour
 
     private bool m_bJSet = false;
     private bool m_bMagSet = false;
+    private string m_sCondName = "none";
     private bool m_bCondSet = false;
     private bool m_bInverseNz = false;
     private bool m_bJxPeroidSet = false;
@@ -197,6 +206,10 @@ public class CManager : MonoBehaviour
         m_iK2Handle = CmpShader.FindKernel("CaclK2");
         m_iK3Handle = CmpShader.FindKernel("CaclK3");
         m_iKernelHandle = CmpShader.FindKernel("CSMain");
+        m_iK1HandleP = CmpShader.FindKernel("CaclK1p");
+        m_iK2HandleP = CmpShader.FindKernel("CaclK2p");
+        m_iK3HandleP = CmpShader.FindKernel("CaclK3p");
+        m_iKernelHandleP = CmpShader.FindKernel("CSMainp");
 
         BuildInitialTexture(512);
 
@@ -235,6 +248,22 @@ public class CManager : MonoBehaviour
         CmpShader.SetTexture(m_iKernelHandle, "k1x", K1X);
         CmpShader.SetTexture(m_iKernelHandle, "k1y", K1Y);
         CmpShader.SetTexture(m_iKernelHandle, "k1z", K1Z);
+
+        CmpShader.SetTexture(m_iK1HandleP, "k1x", K1X);
+        CmpShader.SetTexture(m_iK1HandleP, "k1y", K1Y);
+        CmpShader.SetTexture(m_iK1HandleP, "k1z", K1Z);
+
+        CmpShader.SetTexture(m_iK2HandleP, "k1x", K1X);
+        CmpShader.SetTexture(m_iK2HandleP, "k1y", K1Y);
+        CmpShader.SetTexture(m_iK2HandleP, "k1z", K1Z);
+
+        CmpShader.SetTexture(m_iK3HandleP, "k1x", K1X);
+        CmpShader.SetTexture(m_iK3HandleP, "k1y", K1Y);
+        CmpShader.SetTexture(m_iK3HandleP, "k1z", K1Z);
+
+        CmpShader.SetTexture(m_iKernelHandleP, "k1x", K1X);
+        CmpShader.SetTexture(m_iKernelHandleP, "k1y", K1Y);
+        CmpShader.SetTexture(m_iKernelHandleP, "k1z", K1Z);
     }
 	
 	// Update is called once per frame
@@ -242,10 +271,23 @@ public class CManager : MonoBehaviour
     {
 	    if (m_bRunning)
 	    {
-            CmpShader.Dispatch(m_iK1Handle, m_iResolution / 8, m_iResolution / 8, 1);
-            CmpShader.Dispatch(m_iK2Handle, m_iResolution / 8, m_iResolution / 8, 1);
-            CmpShader.Dispatch(m_iK3Handle, m_iResolution / 8, m_iResolution / 8, 1);
-            CmpShader.Dispatch(m_iKernelHandle, m_iResolution / 8, m_iResolution / 8, 1);
+	        m_iJxStep += 2;
+            CmpShader.SetInt("jxstep", m_iJxStep);
+	        if (TogglePeriodic.isOn)
+	        {
+                CmpShader.Dispatch(m_iK1HandleP, m_iResolution / 16, m_iResolution / 16, 1);
+                CmpShader.Dispatch(m_iK2HandleP, m_iResolution / 16, m_iResolution / 16, 1);
+                CmpShader.Dispatch(m_iK3HandleP, m_iResolution / 16, m_iResolution / 16, 1);
+                CmpShader.Dispatch(m_iKernelHandleP, m_iResolution / 16, m_iResolution / 16, 1);
+            }
+	        else
+	        {
+                CmpShader.Dispatch(m_iK1Handle, m_iResolution / 16, m_iResolution / 16, 1);
+                CmpShader.Dispatch(m_iK2Handle, m_iResolution / 16, m_iResolution / 16, 1);
+                CmpShader.Dispatch(m_iK3Handle, m_iResolution / 16, m_iResolution / 16, 1);
+                CmpShader.Dispatch(m_iKernelHandle, m_iResolution / 16, m_iResolution / 16, 1);
+            }
+
 
             ++m_iFrame;
             FrameCount.text = m_iFrame.ToString();
@@ -304,6 +346,7 @@ public class CManager : MonoBehaviour
             JxButton.interactable = true;
             RemoveJxButton.interactable = true;
             BtResolution.interactable = true;
+            TogglePeriodic.interactable = true;
         }
         else
         {
@@ -325,6 +368,7 @@ public class CManager : MonoBehaviour
             JxButton.interactable = false;
             RemoveJxButton.interactable = false;
             BtResolution.interactable = false;
+            TogglePeriodic.interactable = false;
 
             CmpShader.SetFloat("K", float.Parse(K.text));
             CmpShader.SetFloat("D", float.Parse(D.text));
@@ -338,7 +382,8 @@ public class CManager : MonoBehaviour
             m_iStopFrame = int.Parse(stopstep.text);
             m_iSaveFrame = int.Parse(savestep.text);
 
-            CmpShader.SetInt("jxstep", 0);
+            //CmpShader.SetInt("jxstep", 0);
+            m_iJxStep = 0;
             if (!m_bJxPeroidSet)
             {
                 SetJXTexture(0, null);
@@ -382,7 +427,7 @@ public class CManager : MonoBehaviour
                     MagButtonName.text = sFileName.Substring(iLastSlash);
                     m_bMagSet = true;
 
-                    if (m_bMagSet && m_bJSet && m_bCondSet)
+                    if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
                     {
                         Bt.interactable = true;
                     }
@@ -398,7 +443,7 @@ public class CManager : MonoBehaviour
                     MagButtonName.text = sFileName.Substring(iLastSlash);
                     m_bMagSet = true;
 
-                    if (m_bMagSet && m_bJSet && m_bCondSet)
+                    if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
                     {
                         Bt.interactable = true;
                     }
@@ -424,7 +469,7 @@ public class CManager : MonoBehaviour
                 JButtonName.text = sFileName.Substring(iLastSlash);
                 m_bJSet = true;
 
-                if (m_bMagSet && m_bJSet && m_bCondSet)
+                if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
                 {
                     Bt.interactable = true;
                 }
@@ -442,11 +487,11 @@ public class CManager : MonoBehaviour
                 string sFileName = sPath[0];
                 sFileName = sFileName.Replace("\\", "/");
                 int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
-                BoundaryName.text = sFileName.Substring(iLastSlash);
-
+                m_sCondName = sFileName.Substring(iLastSlash);
+                BoundaryName.text = m_sCondName;
                 m_bCondSet = true;
 
-                if (m_bMagSet && m_bJSet && m_bCondSet)
+                if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
                 {
                     Bt.interactable = true;
                 }
@@ -534,6 +579,30 @@ last standard deviation/delta time={12}",
         m_bInverseNz = ToggleInverseNz.isOn;
         MatShow.SetFloat("_InverseNz", m_bInverseNz ? 1.0f : 0.0f);
         OutPutSingle.material.SetFloat("_InverseNz", m_bInverseNz ? 1.0f : 0.0f);
+    }
+
+    public void OnTogglePeriodic()
+    {
+        if (TogglePeriodic.isOn)
+        {
+            CondButton.interactable = false;
+            BoundaryName.text = "periodic";
+
+            if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
+            {
+                Bt.interactable = true;
+            }
+        }
+        else
+        {
+            CondButton.interactable = true;
+            BoundaryName.text = m_sCondName;
+
+            if (!m_bCondSet)
+            {
+                Bt.interactable = false;
+            }
+        }
     }
 
     #region Load Magnetic
@@ -688,6 +757,20 @@ last standard deviation/delta time={12}",
         CmpShader.SetTexture(m_iKernelHandle, "magneticMomentumY", InternalRTG);
         CmpShader.SetTexture(m_iKernelHandle, "magneticMomentumZ", InternalRTB);
 
+        CmpShader.SetTexture(m_iK1HandleP, "magneticMomentumX", InternalRTR);
+        CmpShader.SetTexture(m_iK1HandleP, "magneticMomentumY", InternalRTG);
+        CmpShader.SetTexture(m_iK1HandleP, "magneticMomentumZ", InternalRTB);
+        CmpShader.SetTexture(m_iK2HandleP, "magneticMomentumX", InternalRTR);
+        CmpShader.SetTexture(m_iK2HandleP, "magneticMomentumY", InternalRTG);
+        CmpShader.SetTexture(m_iK2HandleP, "magneticMomentumZ", InternalRTB);
+        CmpShader.SetTexture(m_iK3HandleP, "magneticMomentumX", InternalRTR);
+        CmpShader.SetTexture(m_iK3HandleP, "magneticMomentumY", InternalRTG);
+        CmpShader.SetTexture(m_iK3HandleP, "magneticMomentumZ", InternalRTB);
+
+        CmpShader.SetTexture(m_iKernelHandleP, "magneticMomentumX", InternalRTR);
+        CmpShader.SetTexture(m_iKernelHandleP, "magneticMomentumY", InternalRTG);
+        CmpShader.SetTexture(m_iKernelHandleP, "magneticMomentumZ", InternalRTB);
+
         //Graphics.Blit(null, ShowRT, GetXYZ);
     }
 
@@ -747,6 +830,11 @@ last standard deviation/delta time={12}",
         CmpShader.SetTexture(m_iK2Handle, "exchangeStrength", JTexture);
         CmpShader.SetTexture(m_iK3Handle, "exchangeStrength", JTexture);
         CmpShader.SetTexture(m_iKernelHandle, "exchangeStrength", JTexture);
+
+        CmpShader.SetTexture(m_iK1HandleP, "exchangeStrength", JTexture);
+        CmpShader.SetTexture(m_iK2HandleP, "exchangeStrength", JTexture);
+        CmpShader.SetTexture(m_iK3HandleP, "exchangeStrength", JTexture);
+        CmpShader.SetTexture(m_iKernelHandleP, "exchangeStrength", JTexture);
     }
 
     #endregion
@@ -854,6 +942,12 @@ last standard deviation/delta time={12}",
 
             CmpShader.SetTexture(m_iKernelHandle, "jxPeroidFunction", JxTexture);
 
+            CmpShader.SetTexture(m_iK1HandleP, "jxPeroidFunction", JxTexture);
+            CmpShader.SetTexture(m_iK2HandleP, "jxPeroidFunction", JxTexture);
+            CmpShader.SetTexture(m_iK3HandleP, "jxPeroidFunction", JxTexture);
+
+            CmpShader.SetTexture(m_iKernelHandleP, "jxPeroidFunction", JxTexture);
+
             return;
         }
 
@@ -876,6 +970,12 @@ last standard deviation/delta time={12}",
         CmpShader.SetTexture(m_iK3Handle, "jxPeroidFunction", JxTexture);
 
         CmpShader.SetTexture(m_iKernelHandle, "jxPeroidFunction", JxTexture);
+
+        CmpShader.SetTexture(m_iK1HandleP, "jxPeroidFunction", JxTexture);
+        CmpShader.SetTexture(m_iK2HandleP, "jxPeroidFunction", JxTexture);
+        CmpShader.SetTexture(m_iK3HandleP, "jxPeroidFunction", JxTexture);
+
+        CmpShader.SetTexture(m_iKernelHandleP, "jxPeroidFunction", JxTexture);
     }
 
     public void ShowErrorMessage(string sMsg)

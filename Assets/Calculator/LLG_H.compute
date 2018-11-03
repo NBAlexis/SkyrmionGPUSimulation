@@ -1,5 +1,4 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CaclK1
 
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
@@ -28,10 +27,12 @@ float D0;
 float B;
 float alpha;
 float timestep;
-uint jxstep;
+uint jxstep; //read only, set it in script
 uint jxperoid;
 
-[numthreads(8, 8, 1)]
+#pragma kernel CaclK1
+
+[numthreads(16, 16, 1)]
 void CaclK1(uint3 id : SV_DispatchThreadID)
 {
     float3 zero3 = float3(0.0f, 0.0f, 0.0f);
@@ -74,7 +75,7 @@ void CaclK1(uint3 id : SV_DispatchThreadID)
 
 #pragma kernel CaclK2
 
-[numthreads(8, 8, 1)]
+[numthreads(16, 16, 1)]
 void CaclK2(uint3 id : SV_DispatchThreadID)
 {
     float3 zero3 = float3(0.0f, 0.0f, 0.0f);
@@ -131,7 +132,7 @@ void CaclK2(uint3 id : SV_DispatchThreadID)
 
 #pragma kernel CaclK3
 
-[numthreads(8, 8, 1)]
+[numthreads(16, 16, 1)]
 void CaclK3(uint3 id : SV_DispatchThreadID)
 {
     float3 zero3 = float3(0.0f, 0.0f, 0.0f);
@@ -190,7 +191,7 @@ void CaclK3(uint3 id : SV_DispatchThreadID)
 
 //(0,0) is left buttom corner!
 //only change the name up to down, the result is unchanged...
-[numthreads(8, 8, 1)]
+[numthreads(16, 16, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
     //Calculate K4 first
@@ -237,7 +238,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
 
     //add time for jx current
-    jxstep = jxstep + 2;
+    //jxstep = jxstep + 2;
 
     float3 newS = cross(s, beff) + stt;
     newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
@@ -256,4 +257,239 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     magneticMomentumX[id.xy] = retColor.x * edge;
     magneticMomentumY[id.xy] = retColor.y * edge;
     magneticMomentumZ[id.xy] = retColor.z * edge;
+}
+
+#pragma kernel CaclK1p
+
+[numthreads(16, 16, 1)]
+void CaclK1p(uint3 id : SV_DispatchThreadID)
+{
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    float3 s = float3(magneticMomentumX[id.xy], magneticMomentumY[id.xy], magneticMomentumZ[id.xy]);
+
+    uint2 gleft  = uint2((id.x + size.x - 1) & (size.x - 1), id.y);
+    uint2 gright = uint2((id.x + 1) & (size.x - 1), id.y);
+    uint2 gdown  = uint2(id.x, (id.y + size.y - 1) & (size.y - 1));
+    uint2 gup    = uint2(id.x, (id.y + 1) & (size.y - 1));
+
+    float3 sleft = float3(magneticMomentumX[gleft], magneticMomentumY[gleft], magneticMomentumZ[gleft]);
+    float3 sright = float3(magneticMomentumX[gright], magneticMomentumY[gright], magneticMomentumZ[gright]);
+    float3 sdown = float3(magneticMomentumX[gdown], magneticMomentumY[gdown], magneticMomentumZ[gdown]);
+    float3 sup = float3(magneticMomentumX[gup], magneticMomentumY[gup], magneticMomentumZ[gup]);
+
+    float j_s = exchangeStrength[id.xy];
+    float j_left = exchangeStrength[gleft];
+    float j_down = exchangeStrength[gdown];
+
+    float d_s = D0 + D * j_s;
+    float d_left = D0 + D * j_left;
+    float d_down = D0 + D * j_down;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
+
+    //t is now
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2(jxstep % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
+
+    float3 k1res = timestep * newS;
+
+    k1x[id.xy] = k1res.x;
+    k1y[id.xy] = k1res.y;
+    k1z[id.xy] = k1res.z;
+}
+
+#pragma kernel CaclK2p
+
+[numthreads(16, 16, 1)]
+void CaclK2p(uint3 id : SV_DispatchThreadID)
+{
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    float3 s = float3(magneticMomentumX[id.xy] + 0.5 * k1x[id.xy],
+        magneticMomentumY[id.xy] + 0.5 * k1y[id.xy],
+        magneticMomentumZ[id.xy] + 0.5 * k1z[id.xy]);
+
+    uint2 gleft = uint2((id.x + size.x - 1) & (size.x - 1), id.y);
+    uint2 gright = uint2((id.x + 1) & (size.x - 1), id.y);
+    uint2 gdown = uint2(id.x, (id.y + size.y - 1) & (size.y - 1));
+    uint2 gup = uint2(id.x, (id.y + 1) & (size.y - 1));
+
+    float3 sleft = float3(magneticMomentumX[gleft] + 0.5 * k1x[gleft],
+                          magneticMomentumY[gleft] + 0.5 * k1y[gleft],
+                          magneticMomentumZ[gleft] + 0.5 * k1z[gleft]);
+    float3 sright = float3(magneticMomentumX[gright] + 0.5 * k1x[gright],
+                           magneticMomentumY[gright] + 0.5 * k1y[gright],
+                           magneticMomentumZ[gright] + 0.5 * k1z[gright]);
+    float3 sdown = float3(magneticMomentumX[gdown] + 0.5 * k1x[gdown],
+                          magneticMomentumY[gdown] + 0.5 * k1y[gdown],
+                          magneticMomentumZ[gdown] + 0.5 * k1z[gdown]);
+    float3 sup = float3(magneticMomentumX[gup] + 0.5 * k1x[gup],
+                        magneticMomentumY[gup] + 0.5 * k1y[gup],
+                        magneticMomentumZ[gup] + 0.5 * k1z[gup]);
+
+    float j_s = exchangeStrength[id.xy];
+    float j_left = exchangeStrength[gleft];
+    float j_down = exchangeStrength[gdown];
+
+    float d_s = D0 + D * j_s;
+    float d_left = D0 + D * j_left;
+    float d_down = D0 + D * j_down;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
+
+    //t is t + 0.5 dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 1) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
+
+    float3 k2res = timestep * newS;
+
+    k1x[id.xy + uint2(size[0], 0)] = k2res.x;
+    k1y[id.xy + uint2(size[0], 0)] = k2res.y;
+    k1z[id.xy + uint2(size[0], 0)] = k2res.z;
+}
+
+#pragma kernel CaclK3p
+
+[numthreads(16, 16, 1)]
+void CaclK3p(uint3 id : SV_DispatchThreadID)
+{
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    float3 s = float3(magneticMomentumX[id.xy] + 0.5 * k1x[id.xy + uint2(size[0], 0)],
+        magneticMomentumY[id.xy] + 0.5 * k1y[id.xy + uint2(size[0], 0)],
+        magneticMomentumZ[id.xy] + 0.5 * k1z[id.xy + uint2(size[0], 0)]);
+
+    uint2 gleft = uint2((id.x + size.x - 1) & (size.x - 1), id.y);
+    uint2 gright = uint2((id.x + 1) & (size.x - 1), id.y);
+    uint2 gdown = uint2(id.x, (id.y + size.y - 1) & (size.y - 1));
+    uint2 gup = uint2(id.x, (id.y + 1) & (size.y - 1));
+
+    float3 sleft = float3(magneticMomentumX[gleft] + 0.5 * k1x[gleft + uint2(size[0], 0)],
+                          magneticMomentumY[gleft] + 0.5 * k1y[gleft + uint2(size[0], 0)],
+                          magneticMomentumZ[gleft] + 0.5 * k1z[gleft + uint2(size[0], 0)]);
+    float3 sright = float3(magneticMomentumX[gright] + 0.5 * k1x[gright + uint2(size[0], 0)],
+                           magneticMomentumY[gright] + 0.5 * k1y[gright + uint2(size[0], 0)],
+                           magneticMomentumZ[gright] + 0.5 * k1z[gright + uint2(size[0], 0)]);
+    float3 sdown = float3(magneticMomentumX[gdown] + 0.5 * k1x[gdown + uint2(size[0], 0)],
+                          magneticMomentumY[gdown] + 0.5 * k1y[gdown + uint2(size[0], 0)],
+                          magneticMomentumZ[gdown] + 0.5 * k1z[gdown + uint2(size[0], 0)]);
+    float3 sup = float3(magneticMomentumX[gup] + 0.5 * k1x[gup + uint2(size[0], 0)],
+                        magneticMomentumY[gup] + 0.5 * k1y[gup + uint2(size[0], 0)],
+                        magneticMomentumZ[gup] + 0.5 * k1z[gup + uint2(size[0], 0)]);
+
+    float j_s = exchangeStrength[id.xy];
+    float j_left = exchangeStrength[gleft];
+    float j_down = exchangeStrength[gdown];
+
+    float d_s = D0 + D * j_s;
+    float d_left = D0 + D * j_left;
+    float d_down = D0 + D * j_down;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
+
+    //t is t + 0.5 dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 1) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
+
+    float3 k3res = timestep * newS;
+
+    k1x[id.xy + uint2(0, size[1])] = k3res.x;
+    k1y[id.xy + uint2(0, size[1])] = k3res.y;
+    k1z[id.xy + uint2(0, size[1])] = k3res.z;
+}
+
+#pragma kernel CSMainp
+
+//(0,0) is left buttom corner!
+//only change the name up to down, the result is unchanged...
+[numthreads(16, 16, 1)]
+void CSMainp(uint3 id : SV_DispatchThreadID)
+{
+    //Calculate K4 first
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    float3 s = float3(magneticMomentumX[id.xy] + k1x[id.xy + uint2(0, size[1])],
+        magneticMomentumY[id.xy] + k1y[id.xy + uint2(0, size[1])],
+        magneticMomentumZ[id.xy] + k1z[id.xy + uint2(0, size[1])]);
+
+    uint2 gleft = uint2((id.x + size.x - 1) & (size.x - 1), id.y);
+    uint2 gright = uint2((id.x + 1) & (size.x - 1), id.y);
+    uint2 gdown = uint2(id.x, (id.y + size.y - 1) & (size.y - 1));
+    uint2 gup = uint2(id.x, (id.y + 1) & (size.y - 1));
+
+    float3 sleft = float3(magneticMomentumX[gleft] + k1x[gleft + uint2(0, size[1])],
+                          magneticMomentumY[gleft] + k1y[gleft + uint2(0, size[1])],
+                          magneticMomentumZ[gleft] + k1z[gleft + uint2(0, size[1])]);
+    float3 sright = float3(magneticMomentumX[gright] + k1x[gright + uint2(0, size[1])],
+                           magneticMomentumY[gright] + k1y[gright + uint2(0, size[1])],
+                           magneticMomentumZ[gright] + k1z[gright + uint2(0, size[1])]);
+    float3 sdown = float3(magneticMomentumX[gdown] + k1x[gdown + uint2(0, size[1])],
+                          magneticMomentumY[gdown] + k1y[gdown + uint2(0, size[1])],
+                          magneticMomentumZ[gdown] + k1z[gdown + uint2(0, size[1])]);
+    float3 sup = float3(magneticMomentumX[gup] + k1x[gup + uint2(0, size[1])],
+                        magneticMomentumY[gup] + k1y[gup + uint2(0, size[1])],
+                        magneticMomentumZ[gup] + k1z[gup + uint2(0, size[1])]);
+
+    float j_s = exchangeStrength[id.xy];
+    float j_left = exchangeStrength[gleft];
+    float j_down = exchangeStrength[gdown];
+
+    float d_s = D0 + D * j_s;
+    float d_left = D0 + D * j_left;
+    float d_down = D0 + D * j_down;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, B) + 2.0 * K * float3(0.0f, 0.0f, s.z);
+
+    //t is t + dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 2) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    //add time for jx current
+    //jxstep = jxstep + 2;
+
+    float3 newS = cross(s, beff) + stt;
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
+
+    float3 k4res = timestep * newS;
+
+    k4res = (k4res + float3(k1x[id.xy], k1y[id.xy], k1z[id.xy]) +
+        2.0 * float3(k1x[id.xy + uint2(size[0], 0)], k1y[id.xy + uint2(size[0], 0)], k1z[id.xy + uint2(size[0], 0)]) +
+        2.0 * float3(k1x[id.xy + uint2(0, size[1])], k1y[id.xy + uint2(0, size[1])], k1z[id.xy + uint2(0, size[1])])) / 6.0;
+
+    s = float3(magneticMomentumX[id.xy], magneticMomentumY[id.xy], magneticMomentumZ[id.xy]);
+    float3 retColor = normalize(s + k4res);
+
+    magneticMomentumX[id.xy] = retColor.x;
+    magneticMomentumY[id.xy] = retColor.y;
+    magneticMomentumZ[id.xy] = retColor.z;
 }
