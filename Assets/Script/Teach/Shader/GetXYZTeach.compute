@@ -1,0 +1,37 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+Texture2D<float4> Mag;
+RWTexture2D<float3> Result;
+
+[numthreads(16, 16, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float PI = 3.14159265f;
+    float3 nxyz = Mag[id.xy].xyz;
+
+    float fTheta = acos(clamp(nxyz.z, -1.0f, 1.0f));
+    if (fTheta < 0.0f)
+    {
+        fTheta = fTheta + 2.0f * PI;
+    }
+    if (fTheta > 2.0f * PI)
+    {
+        fTheta = fTheta - 2.0f * PI;
+    }
+    if (fTheta > PI)
+    {
+        fTheta = 2.0f * PI - fTheta;
+    }
+
+    float fPhi = atan2(nxyz.y, nxyz.x);
+    if (fPhi < 0.0f)
+    {
+        fPhi = fPhi + 2.0f * PI;
+    }
+
+    Result[id.xy] = float4(saturate(fTheta / PI), saturate(0.5f * fPhi / PI), 0.0f, 1.0f);
+
+}

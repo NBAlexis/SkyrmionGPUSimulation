@@ -1,0 +1,250 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+//RWStructuredBuffer<float3> magneticMomentum;
+//Using RFloat texture format so we do not need a float4.
+RWTexture2D<float4> magneticMomentum;
+
+//1024 x 1024
+//0,0-512,512 is k1
+//512,0-1024,512 is k2
+//0,512-512,1024 is k3
+RWTexture2D<float4> k1;
+
+Texture2D<float4>  jdbkStrength;
+
+Texture2D<float4>  boundaryCondition;
+Texture2D<float>   jxPeroidFunction;
+
+int size;
+float alpha;
+float timestep;
+uint jxstep; //read only, set it in script
+uint jxperoid;
+
+#pragma kernel CaclK1
+
+[numthreads(16, 16, 1)]
+void CaclK1(uint3 id : SV_DispatchThreadID)
+{
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    uint2 gleft = uint2((id.x + size - 1) & (size - 1), id.y);
+    uint2 gright = uint2((id.x + 1) & (size - 1), id.y);
+    uint2 gdown = uint2(id.x, (id.y + size - 1) & (size - 1));
+    uint2 gup = uint2(id.x, (id.y + 1) & (size - 1));
+
+    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+    float edgel = boundaryCondition[gleft].r > 0.5f ? 1.0f : 0.0f;
+    float edger = boundaryCondition[gright].r > 0.5f ? 1.0f : 0.0f;
+    float edged = boundaryCondition[gdown].r > 0.5f ? 1.0f : 0.0f;
+    float edgeu = boundaryCondition[gup].r > 0.5f ? 1.0f : 0.0f;
+
+    float3 s = magneticMomentum[id.xy].xyz * edge;
+
+    float3 sleft = magneticMomentum[gleft].xyz * edgel;
+    float3 sright = magneticMomentum[gright].xyz * edger;
+    float3 sdown = magneticMomentum[gdown].xyz * edged;
+    float3 sup = magneticMomentum[gup].xyz * edgeu;
+
+    float j_s = jdbkStrength[id.xy].x * edge;
+    float j_left = jdbkStrength[gleft].x * edgel;
+    float j_down = jdbkStrength[gdown].x * edged;
+
+    float d_s = jdbkStrength[id.xy].y * edge;
+    float d_left = jdbkStrength[gleft].y * edgel;
+    float d_down = jdbkStrength[gdown].y * edged;
+
+    float b_s = jdbkStrength[id.xy].z * edge;
+    float k_s = jdbkStrength[id.xy].w * edge;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, b_s) + 2.0 * k_s * float3(0.0f, 0.0f, s.z);
+
+    //t is now
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2(jxstep % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = timestep * (newS - alpha * cross(s, newS)) / (1.0 + alpha * alpha);
+
+    k1[id.xy] = float4(newS.r, newS.g, newS.b, 1.0) * edge;
+    //k1[id.xy] = float4(beff.x, beff.y, beff.z, 1.0);
+}
+
+#pragma kernel CaclK2
+
+[numthreads(16, 16, 1)]
+void CaclK2(uint3 id : SV_DispatchThreadID)
+{
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    uint2 gleft = uint2((id.x + size - 1) & (size - 1), id.y);
+    uint2 gright = uint2((id.x + 1) & (size - 1), id.y);
+    uint2 gdown = uint2(id.x, (id.y + size - 1) & (size - 1));
+    uint2 gup = uint2(id.x, (id.y + 1) & (size - 1));
+
+    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+    float edgel = boundaryCondition[gleft].r > 0.5f ? 1.0f : 0.0f;
+    float edger = boundaryCondition[gright].r > 0.5f ? 1.0f : 0.0f;
+    float edged = boundaryCondition[gdown].r > 0.5f ? 1.0f : 0.0f;
+    float edgeu = boundaryCondition[gup].r > 0.5f ? 1.0f : 0.0f;
+
+    float3 s = (magneticMomentum[id.xy].xyz + 0.5 * k1[id.xy].xyz) * edge;
+    float3 sleft = (magneticMomentum[gleft].xyz + 0.5 * k1[gleft].xyz) * edgel;
+    float3 sright = (magneticMomentum[gright].xyz + 0.5 * k1[gright].xyz) * edger;
+    float3 sdown = (magneticMomentum[gdown].xyz + 0.5 * k1[gdown].xyz) * edged;
+    float3 sup = (magneticMomentum[gup].xyz + 0.5 * k1[gup].xyz) * edgeu;
+
+    float j_s = jdbkStrength[id.xy].x * edge;
+    float j_left = jdbkStrength[gleft].x * edgel;
+    float j_down = jdbkStrength[gdown].x * edged;
+
+    float d_s = jdbkStrength[id.xy].y * edge;
+    float d_left = jdbkStrength[gleft].y * edgel;
+    float d_down = jdbkStrength[gdown].y * edged;
+
+    float b_s = jdbkStrength[id.xy].z * edge;
+    float k_s = jdbkStrength[id.xy].w * edge;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, b_s) + 2.0 * k_s * float3(0.0f, 0.0f, s.z);
+
+    //t is t + 0.5 dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 1) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = timestep * (newS - alpha * cross(s, newS)) / (1.0 + alpha * alpha);
+
+    k1[id.xy + uint2(size, 0)] = float4(newS.r, newS.g, newS.b, 1.0) * edge;
+}
+
+#pragma kernel CaclK3
+
+[numthreads(16, 16, 1)]
+void CaclK3(uint3 id : SV_DispatchThreadID)
+{
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    uint2 gleft = uint2((id.x + size - 1) & (size - 1), id.y);
+    uint2 gright = uint2((id.x + 1) & (size - 1), id.y);
+    uint2 gdown = uint2(id.x, (id.y + size - 1) & (size - 1));
+    uint2 gup = uint2(id.x, (id.y + 1) & (size - 1));
+
+    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+    float edgel = boundaryCondition[gleft].r > 0.5f ? 1.0f : 0.0f;
+    float edger = boundaryCondition[gright].r > 0.5f ? 1.0f : 0.0f;
+    float edged = boundaryCondition[gdown].r > 0.5f ? 1.0f : 0.0f;
+    float edgeu = boundaryCondition[gup].r > 0.5f ? 1.0f : 0.0f;
+
+    float3 s = (magneticMomentum[id.xy].xyz + k1[id.xy + uint2(size, 0)].xyz) * edge;
+    float3 sleft = (magneticMomentum[gleft].xyz + k1[gleft + uint2(size, 0)].xyz) * edgel;
+    float3 sright = (magneticMomentum[gright].xyz + k1[gright + uint2(size, 0)].xyz) * edger;
+    float3 sdown = (magneticMomentum[gdown].xyz + k1[gdown + uint2(size, 0)].xyz) * edged;
+    float3 sup = (magneticMomentum[gup].xyz + k1[gup + uint2(size, 0)].xyz) * edgeu;
+
+    float j_s = jdbkStrength[id.xy].x * edge;
+    float j_left = jdbkStrength[gleft].x * edgel;
+    float j_down = jdbkStrength[gdown].x * edged;
+
+    float d_s = jdbkStrength[id.xy].y * edge;
+    float d_left = jdbkStrength[gleft].y * edgel;
+    float d_down = jdbkStrength[gdown].y * edged;
+
+    float b_s = jdbkStrength[id.xy].z * edge;
+    float k_s = jdbkStrength[id.xy].w * edge;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, b_s) + 2.0 * k_s * float3(0.0f, 0.0f, s.z);
+
+    //t is t + 0.5 dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 1) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    float3 newS = cross(s, beff) + stt;
+    newS = timestep * (newS - alpha * cross(s, newS)) / (1.0 + alpha * alpha);
+
+    k1[id.xy + uint2(0, size)] = float4(newS.r, newS.g, newS.b, 1.0);
+}
+
+#pragma kernel CSMain
+
+//(0,0) is left buttom corner!
+//only change the name up to down, the result is unchanged...
+[numthreads(16, 16, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    //Calculate K4 first
+    float3 zero3 = float3(0.0f, 0.0f, 0.0f);
+
+    uint2 gleft = uint2((id.x + size - 1) & (size - 1), id.y);
+    uint2 gright = uint2((id.x + 1) & (size - 1), id.y);
+    uint2 gdown = uint2(id.x, (id.y + size - 1) & (size - 1));
+    uint2 gup = uint2(id.x, (id.y + 1) & (size - 1));
+
+    float edge = boundaryCondition[id.xy].r > 0.5f ? 1.0f : 0.0f;
+    float edgel = boundaryCondition[gleft].r > 0.5f ? 1.0f : 0.0f;
+    float edger = boundaryCondition[gright].r > 0.5f ? 1.0f : 0.0f;
+    float edged = boundaryCondition[gdown].r > 0.5f ? 1.0f : 0.0f;
+    float edgeu = boundaryCondition[gup].r > 0.5f ? 1.0f : 0.0f;
+
+    float3 s = (magneticMomentum[id.xy].xyz + k1[id.xy + uint2(0, size)].xyz) * edge;
+
+    float3 sleft = (magneticMomentum[gleft].xyz + k1[gleft + uint2(0, size)].xyz) * edgel;
+    float3 sright = (magneticMomentum[gright].xyz + k1[gright + uint2(0, size)].xyz) * edger;
+    float3 sdown = (magneticMomentum[gdown].xyz + k1[gdown + uint2(0, size)].xyz) * edged;
+    float3 sup = (magneticMomentum[gup].xyz + k1[gup + uint2(0, size)].xyz) * edgeu;
+
+    float j_s = jdbkStrength[id.xy].x * edge;
+    float j_left = jdbkStrength[gleft].x * edgel;
+    float j_down = jdbkStrength[gdown].x * edged;
+
+    float d_s = jdbkStrength[id.xy].y * edge;
+    float d_left = jdbkStrength[gleft].y * edgel;
+    float d_down = jdbkStrength[gdown].y * edged;
+
+    float b_s = jdbkStrength[id.xy].z * edge;
+    float k_s = jdbkStrength[id.xy].w * edge;
+
+    float3 vright = float3(1.0, 0.0, 0.0);
+    float3 vup = float3(0.0, 1.0, 0.0);
+
+    float3 beff = (j_left * sleft + j_s * sright + j_down * sdown + j_s * sup)
+        + (d_s * cross(sright, vright) - d_left * cross(sleft, vright) + d_s * cross(sup, vup) - d_down * cross(sdown, vup))
+        + float3(0.0f, 0.0f, b_s) + 2.0 * k_s * float3(0.0f, 0.0f, s.z);
+
+    //t is t + dt
+    float jx = jxperoid > 0 ? jxPeroidFunction[uint2((jxstep + 2) % jxperoid, 0)] : 0.0f;
+    float3 stt = -jx * cross(s, cross((sright - sleft) * 0.5f, s));
+
+    //add time for jx current
+    //jxstep = jxstep + 2;
+
+    float3 newS = cross(s, beff) + stt;
+    newS = (newS - alpha * cross(s, newS)) / (1 + alpha * alpha);
+
+    float3 k4res = timestep * newS;
+
+    k4res = (k4res + k1[id.xy].xyz + 2.0 * k1[id.xy + uint2(size, 0)].xyz + 2.0 * k1[id.xy + uint2(0, size)].xyz) / 6.0;
+
+    s = magneticMomentum[id.xy].xyz;
+    float3 retColor = edge < 0.5f ? zero3 : normalize(s + k4res);
+
+    //magneticMomentum[id.xy] = magneticMomentum[id.xy] + float4(0.1, 0.0, 0.0, 0.0);
+    magneticMomentum[id.xy] = float4(retColor.r, retColor.g, retColor.b, 1.0);
+    //magneticMomentum[id.xy] = float4(j_s, d_s, b_s, k_s);
+}

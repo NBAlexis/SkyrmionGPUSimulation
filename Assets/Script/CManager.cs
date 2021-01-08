@@ -94,13 +94,13 @@ public class CManager : MonoBehaviour
 
     private void CalculateStdDev()
     {
-        RenderTexture rt = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.ARGB32);
+        RenderTexture rt = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
 
         MatGetXYZ.SetTexture("_Nx", InternalRTR);
         MatGetXYZ.SetTexture("_Ny", InternalRTG);
         MatGetXYZ.SetTexture("_Nz", InternalRTB);
         Graphics.Blit(null, rt, MatGetXYZ);
-        Texture2D dataReader = new Texture2D(m_iResolution, m_iResolution, TextureFormat.ARGB32, false);
+        Texture2D dataReader = new Texture2D(m_iResolution, m_iResolution, TextureFormat.ARGB32, false, true);
         RenderTexture.active = rt;
         dataReader.ReadPixels(new Rect(0, 0, m_iResolution, m_iResolution), 0, 0);
         dataReader.Apply();
@@ -164,7 +164,7 @@ public class CManager : MonoBehaviour
 
     #endregion
 
-    private Texture2D m_pTestT2;
+    private Texture2D m_pTestT2 = null;
     private int m_iFrame = 0;
     private int m_iStopFrame = -1;
     private int m_iSaveFrame = -1;
@@ -190,7 +190,7 @@ public class CManager : MonoBehaviour
         Application.runInBackground = true;
         Application.targetFrameRate = -1;
 
-        Texture2D indit = new Texture2D(128, 128, TextureFormat.ARGB32, false);
+        Texture2D indit = new Texture2D(128, 128, TextureFormat.ARGB32, false, true);
         Color[] colorsi = new Color[128 * 128];
         for (int i = 0; i < 128 * 128; ++i)
         {
@@ -653,31 +653,44 @@ last standard deviation/delta time={12}",
     private static Color[] _txcG = new Color[512 * 512];
     private static Color[] _txcB = new Color[512 * 512];
 
+#if UNITY_EDITOR
+    public RawImage tester;
+#endif
+
     private bool LoadMagneticPic(string sPicFileName)
     {
         if (null == m_pTestT2 || m_iResolution != m_pTestT2.width)
         {
-            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGBA32, false);
+            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGB24, false, true);
         }
         if (!m_pTestT2.LoadImage(File.ReadAllBytes(sPicFileName), false))
         {
             ShowErrorMessage("Not support this file format.");
-            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGBA32, false);
+            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGB24, false, true);
             return false;
         }
 
         if (m_iResolution != m_pTestT2.width || m_iResolution != m_pTestT2.height)
         {
             ShowErrorMessage(string.Format("Only support {0} x {0} file.", m_iResolution));
-            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGBA32, false);
+            m_pTestT2 = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGB24, false, true);
             return false;
         }
+
+#if UNITY_EDITOR
+        tester.texture = m_pTestT2;
+#endif
 
         for (int x = 0; x < m_iResolution; ++x)
         {
             for (int y = 0; y < m_iResolution; ++y)
             {
                 Color c = m_pTestT2.GetPixel(x, y);
+                //if ((0 == x && 0 == y)
+                //  || (10 == x && 10 == y))
+                //{
+                //    Debug.Log(string.Format("x={0},y={1},c={2}", x, y, c));
+                //}
                 _mags[y* m_iResolution + x] = new Vector3(2.0f*c.r - 1.0f, 2.0f*c.g - 1.0f, 2.0f*c.b - 1.0f);
             }
         }
@@ -691,15 +704,15 @@ last standard deviation/delta time={12}",
     {
         if (null == _txR || m_iResolution != _txR.width)
         {
-            _txR = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false);
+            _txR = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false, true);
         }
         if (null == _txG || m_iResolution != _txG.width)
         {
-            _txG = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false);
+            _txG = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false, true);
         }
         if (null == _txB || m_iResolution != _txB.width)
         {
-            _txB = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false);
+            _txB = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false, true);
         }
 
         for (int i = 0; i < m_iResolution * m_iResolution; ++i)
@@ -816,7 +829,7 @@ last standard deviation/delta time={12}",
     {
         if (null == JTexture || m_iResolution != JTexture.width)
         {
-            JTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false);
+            JTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false, true);
         }
 
         for (int i = 0; i < m_iResolution * m_iResolution; ++i)
@@ -931,7 +944,7 @@ last standard deviation/delta time={12}",
             nonejxcolor[0] = new Color(0.0f, 0.0f, 0.0f);
             if (null == JxTexture || JxTexture.width != 1)
             {
-                JxTexture = new Texture2D(1, 1, TextureFormat.RFloat, false);
+                JxTexture = new Texture2D(1, 1, TextureFormat.RFloat, false, true);
             }
             JxTexture.SetPixels(nonejxcolor);
             JxTexture.Apply(false);
@@ -953,7 +966,7 @@ last standard deviation/delta time={12}",
 
         if (null == JxTexture || JxTexture.width != jxStep)
         {
-            JxTexture = new Texture2D(jxStep, 1, TextureFormat.RFloat, false);
+            JxTexture = new Texture2D(jxStep, 1, TextureFormat.RFloat, false, true);
         }
 
         Color[] jxcolors = new Color[jxStep];

@@ -46,13 +46,13 @@ public static class CExportData
 
     private static SGetData BuildMap(int iRes, RenderTexture datax, RenderTexture datay, RenderTexture dataz, Material matShow, Material matRaw)
     {
-        RenderTexture rt = new RenderTexture(iRes, iRes, 0, RenderTextureFormat.ARGB32);
+        RenderTexture rt = new RenderTexture(iRes, iRes, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
 
         matRaw.SetTexture("_Nx", datax);
         matRaw.SetTexture("_Ny", datay);
         matRaw.SetTexture("_Nz", dataz);
         Graphics.Blit(null, rt, matRaw);
-        Texture2D dataReader = new Texture2D(iRes, iRes, TextureFormat.ARGB32, false);
+        Texture2D dataReader = new Texture2D(iRes, iRes, TextureFormat.ARGB32, false, true);
         RenderTexture.active = rt;
         dataReader.ReadPixels(new Rect(0, 0, iRes, iRes), 0, 0);
         dataReader.Apply();
@@ -99,7 +99,7 @@ public static class CExportData
         //nz.Release();
 
         int iLRes = iRes*2 - 1;
-        Texture2D retData = new Texture2D(iLRes, iLRes, TextureFormat.RGB24, false, false);
+        Texture2D retData = new Texture2D(iLRes, iLRes, TextureFormat.RGB24, false);
         //string sNx = "", sNy = "", sNz = "";
 
         for (int i = 0; i < iLRes; ++i)

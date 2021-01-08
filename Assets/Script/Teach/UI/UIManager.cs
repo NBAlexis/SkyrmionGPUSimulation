@@ -19,6 +19,7 @@ public enum EDialog
     Msg,
     Image,
     Detail,
+    SaveFile,
 }
 
 public enum EPreviewMatType
@@ -45,6 +46,14 @@ public class CDetailDialogConfig
     public string m_sImageFolder;
     public Action<COneParameterConfig> m_pCallback;
 }
+
+public class CSaveDialogConfig
+{
+    public string m_sImageFolder;
+    public byte[] m_pToSave;
+    public string m_sParameter;
+}
+
 
 
 public class CSimulateParameter
@@ -90,6 +99,8 @@ public class UIManager : MonoBehaviour
 
     public static UIManager _Instance;
     private bool m_bStart = false;
+
+    public RawImage m_tester;
 
     // Start is called before the first frame update
     void Start()
@@ -138,11 +149,22 @@ public class UIManager : MonoBehaviour
         m_pPages[(int)m_eCurrent].Show(config);
     }
 
+    public Image m_imgBackground;
+
+    public void ShowBackground(bool bShow)
+    {
+        m_imgBackground.gameObject.SetActive(bShow);
+    }
+
 
     #region Right Top Panel
 
     public Text m_txtNavLoginButton;
     public Text m_txtNavBackButton;
+
+    public Button m_btBack;
+    public Button m_btHelp;
+    public Button m_btLogin;
 
     public void NavigationLoginButton()
     {
@@ -163,9 +185,18 @@ public class UIManager : MonoBehaviour
         UISoundManager.UISound(EUISound.Button);
     }
 
+    public void ChangeInteract(bool bCanWork)
+    {
+        m_btBack.interactable = bCanWork;
+        m_btHelp.interactable = bCanWork;
+        m_btLogin.interactable = bCanWork;
+    }
+
     #endregion
 
     #region Dialog
+
+    public GameObject m_pDialogBG;
 
     public void OnDialogClosed(EDialog eDialog)
     {
@@ -186,6 +217,8 @@ public class UIManager : MonoBehaviour
 
     public void ShowDialog(EDialog eDialog)
     {
+        m_pDialogBG.SetActive(true);
+        UISoundManager.UISound(EUISound.Popup);
         m_pDialogPlanes[(int)eDialog].gameObject.SetActive(true);
         m_pDialogAnims[(int)eDialog]["PlaneIn"].normalizedTime = 0.0f;
         m_pDialogAnims[(int)eDialog]["PlaneIn"].speed = 1.0f;
@@ -195,6 +228,8 @@ public class UIManager : MonoBehaviour
 
     public void HideDialog(EDialog eDialog)
     {
+        m_pDialogBG.SetActive(false);
+        UISoundManager.UISound(EUISound.Popup);
         m_pDialogAnims[(int)eDialog]["PlaneOut"].normalizedTime = 0.0f;
         m_pDialogAnims[(int)eDialog]["PlaneOut"].speed = 1.0f;
         m_pDialogAnims[(int)eDialog]["PlaneOut"].wrapMode = WrapMode.Clamp;
@@ -479,6 +514,54 @@ public class UIManager : MonoBehaviour
         m_imgDetailImg.texture = tx2D;
     }
 
+
+    #endregion
+
+    #region Save File
+
+    private CSaveDialogConfig m_pSaveConfig;
+    public Text m_txtSaveMsg;
+    public InputField m_inputSaveFileName;
+    public InputField m_inputSaveFileDiscription;
+
+    public void ShowSDialogSave(CSaveDialogConfig config)
+    {
+        m_pSaveConfig = config;
+        ShowDialog(EDialog.SaveFile);
+        m_txtSaveMsg.text = "";
+    }
+
+    public void OnBtDialogSaveOK()
+    {
+        if (string.IsNullOrEmpty(m_inputSaveFileName.text))
+        {
+            m_txtSaveMsg.text = "<color=#FF0000>文件名不能为空</color>";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(m_inputSaveFileDiscription.text))
+        {
+            m_txtSaveMsg.text = "<color=#FF0000>文件描述不能为空</color>";
+            return;
+        }
+
+        string sFile = m_pSaveConfig.m_sImageFolder + m_inputSaveFileName.text + ".png";
+        if (File.Exists(sFile))
+        {
+            m_txtSaveMsg.text = "<color=#FF0000>文件名不能覆盖已有文件</color>";
+            return;
+        }
+
+        HideDialog(EDialog.SaveFile);
+        string sDescFile = m_pSaveConfig.m_sImageFolder + m_inputSaveFileName.text + ".txt";
+        File.WriteAllBytes(sFile, m_pSaveConfig.m_pToSave);
+        File.WriteAllText(sDescFile, m_inputSaveFileDiscription + "\n" + m_pSaveConfig.m_sParameter);
+    }
+
+    public void OnBtDialogSaveCancel()
+    {
+        HideDialog(EDialog.SaveFile);
+    }
 
     #endregion
 

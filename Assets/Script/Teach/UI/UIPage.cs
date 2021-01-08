@@ -22,7 +22,7 @@ public class UIPage : MonoBehaviour
     // Start is called before the first frame update
     public virtual void Start()
     {
-        Debug.Log("base.Start");
+        //Debug.Log("base.Start");
     }
 
     // Update is called once per frame
@@ -63,8 +63,10 @@ public class UIPage : MonoBehaviour
     public virtual void Show(CUIPageConfig config)
     {
         gameObject.SetActive(true);
-        m_fAnimTime = 1.0f;
+        m_fAnimTime = 0.7f;
         m_bInOut = true;
+
+        UISoundManager.UISound(EUISound.Slide);
     }
 
     public virtual void Hide()

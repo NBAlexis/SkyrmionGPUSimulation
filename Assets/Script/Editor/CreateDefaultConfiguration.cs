@@ -20,8 +20,8 @@ public class CreateDefaultConfiguration
         {
             new Vector3(0.0f, 0.0f, 1.0f),
             new Vector3(0.0f, 0.0f, -1.0f),
-            new Vector3(0.0f, 1.0f, 0.0f),
             new Vector3(0.0f, -1.0f, 0.0f),
+            new Vector3(0.0f, 1.0f, 0.0f),
             new Vector3(1.0f, 0.0f, 0.0f),
             new Vector3(-1.0f, 0.0f, 0.0f)
         };
@@ -87,6 +87,9 @@ public class CreateDefaultConfiguration
             Skyrmions(files5[i], 30.0f, 0.0f, ims[i], igs[i], 127, 127);
         }
 
+        Skyrmions("antim1g1.png", 30.0f, 0.0f, -1, 1, 127, 127);
+        Skyrmions("antim1ga1.png", 30.0f, 0.0f, -1, -1, 127, 127);
+
         Debug.Log("-- Finished ---");
     }
 
@@ -139,7 +142,7 @@ public class CreateDefaultConfiguration
 
                 ret[i, j].x = Mathf.Cos(Mathf.PI * 0.5f + fGamma + iM * fPhi) * Mathf.Sin(fTheta);
                 ret[i, j].y = Mathf.Sin(Mathf.PI * 0.5f + fGamma + iM * fPhi) * Mathf.Sin(fTheta);
-                ret[i, j].z = -iG * Mathf.Cos(fTheta);
+                ret[i, j].z = iG * Mathf.Cos(fTheta);
             }
         }
         return ret;
@@ -162,9 +165,14 @@ public class CreateDefaultConfiguration
                 {
                     fTheta += Mathf.PI;
                 }
-                while (fTheta > Mathf.PI)
+                while (fTheta > 2.0f * Mathf.PI)
                 {
-                    fTheta -= Mathf.PI;
+                    fTheta -= 2.0f * Mathf.PI;
+                }
+
+                if (fTheta > Mathf.PI)
+                {
+                    fTheta = 2.0f * Mathf.PI - fTheta;
                 }
 
                 fTheta = fTheta / Mathf.PI;

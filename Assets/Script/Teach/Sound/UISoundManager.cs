@@ -5,6 +5,8 @@ using UnityEngine;
 public enum EUISound
 {
     Button,
+    Slide,
+    Popup,
 }
 
 
@@ -27,6 +29,7 @@ public class UISoundManager : MonoBehaviour
 
     public static void UISound(EUISound eSound)
     {
+        //Debug.Log(eSound);
         if (null != _Instance)
         {
             _Instance._UISound(eSound);
@@ -36,7 +39,7 @@ public class UISoundManager : MonoBehaviour
     private void _UISound(EUISound eSound)
     {
         m_pUISound.Stop();
-        m_pUISound.clip = m_pClips[(int) EUISound.Button];
+        m_pUISound.clip = m_pClips[(int)eSound];
         m_pUISound.Play();
     }
 
