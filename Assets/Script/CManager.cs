@@ -47,6 +47,7 @@ public class CManager : MonoBehaviour
 
     public Toggle ToggleInverseNz;
     public Toggle TogglePeriodic;
+    public Toggle ToggleJDBImage;
 
     #endregion
 
@@ -77,6 +78,8 @@ public class CManager : MonoBehaviour
     private RenderTexture InternalRTG;
     private RenderTexture InternalRTB;
     private Texture2D JTexture;
+    private Texture2D DTexture;
+    private Texture2D BTexture;
     private Texture2D JxTexture;
 
     #endregion
@@ -173,6 +176,9 @@ public class CManager : MonoBehaviour
     private DateTime m_dtSim;
 
     private bool m_bJSet = false;
+    private bool m_bJImageSet = false;
+    private bool m_bBImageSet = false;
+    private bool m_bDImageSet = false;
     private bool m_bMagSet = false;
     private string m_sCondName = "none";
     private bool m_bCondSet = false;
@@ -217,19 +223,21 @@ public class CManager : MonoBehaviour
 
         //ShowRT = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB64, RenderTextureReadWrite.sRGB);
         //OutPutSingle.texture = ShowRT;
+        JDBImage.gameObject.SetActive(false);
     }
 
     private void BuildInitialTexture(int iRes)
     {
         CmpShader.SetInts("size", new int[] { iRes, iRes });
 
-        K1X = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat);
+        //RFloat should be automatically linear
+        K1X = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
         K1X.enableRandomWrite = true;
         K1X.Create();
-        K1Y = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat);
+        K1Y = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
         K1Y.enableRandomWrite = true;
         K1Y.Create();
-        K1Z = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat);
+        K1Z = new RenderTexture(iRes * 2, iRes * 2, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
         K1Z.enableRandomWrite = true;
         K1Z.Create();
 
@@ -371,9 +379,20 @@ public class CManager : MonoBehaviour
             TogglePeriodic.interactable = false;
 
             CmpShader.SetFloat("K", float.Parse(K.text));
-            CmpShader.SetFloat("D", float.Parse(D.text));
-            CmpShader.SetFloat("D0", float.Parse(D0.text));
-            CmpShader.SetFloat("B", float.Parse(B.text));
+            //CmpShader.SetFloat("D", float.Parse(D.text));
+            //CmpShader.SetFloat("D0", float.Parse(D0.text));
+            //CmpShader.SetFloat("B", float.Parse(B.text));
+            if (ToggleJDBImage.isOn)
+            {
+                LoadJTexture();
+                LoadDTexture();
+                LoadBTexture();
+            }
+            else
+            {
+                SetDValue(float.Parse(D0.text), float.Parse(D.text));
+                SetBValue(float.Parse(B.text));
+            }
             m_fTimeStep = float.Parse(timestep.text);
             CmpShader.SetFloat("timestep", m_fTimeStep);
             CmpShader.SetFloat("alpha", float.Parse(alpha.text));
@@ -427,7 +446,9 @@ public class CManager : MonoBehaviour
                     MagButtonName.text = sFileName.Substring(iLastSlash);
                     m_bMagSet = true;
 
-                    if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
+                    if (m_bMagSet &&
+                        ((!ToggleJDBImage.isOn && m_bJSet) || (ToggleJDBImage.isOn && m_bJImageSet && m_bDImageSet && m_bBImageSet))
+                        && (m_bCondSet || TogglePeriodic.isOn))
                     {
                         Bt.interactable = true;
                     }
@@ -443,7 +464,9 @@ public class CManager : MonoBehaviour
                     MagButtonName.text = sFileName.Substring(iLastSlash);
                     m_bMagSet = true;
 
-                    if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
+                    if (m_bMagSet &&
+                        ((!ToggleJDBImage.isOn && m_bJSet) || (ToggleJDBImage.isOn && m_bJImageSet && m_bDImageSet && m_bBImageSet))
+                        && (m_bCondSet || TogglePeriodic.isOn))
                     {
                         Bt.interactable = true;
                     }
@@ -470,6 +493,91 @@ public class CManager : MonoBehaviour
                 m_bJSet = true;
 
                 if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
+                {
+                    Bt.interactable = true;
+                }
+            }
+        }
+    }
+
+    public Text JImageButtonText;
+    public Text DImageButtonText;
+    public Text BImageButtonText;
+
+    public void LoadJImageBt()
+    {
+        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the image",
+            Application.dataPath + _outfolder,
+        new [] {
+            new ExtensionFilter("Image Files", "png", "jpg", "jpeg")
+            },
+            false);
+
+        if (sPath.Length > 0)
+        {
+            if (LoadJTexture(sPath[0]))
+            {
+                string sFileName = sPath[0];
+                sFileName = sFileName.Replace("\\", "/");
+                int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                JImageButtonText.text = "J:(" + sFileName.Substring(iLastSlash) + ")";
+                m_bJImageSet = true;
+
+                if (m_bMagSet && m_bJImageSet && m_bDImageSet && m_bBImageSet && (m_bCondSet || TogglePeriodic.isOn))
+                {
+                    Bt.interactable = true;
+                }
+            }
+        }
+    }
+
+    public void LoadDImageBt()
+    {
+        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the image",
+            Application.dataPath + _outfolder,
+            new[] {
+                new ExtensionFilter("Image Files", "png", "jpg", "jpeg")
+            },
+            false);
+
+        if (sPath.Length > 0)
+        {
+            if (LoadDTexture(sPath[0]))
+            {
+                string sFileName = sPath[0];
+                sFileName = sFileName.Replace("\\", "/");
+                int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                DImageButtonText.text = "D:(" + sFileName.Substring(iLastSlash) + ")";
+                m_bDImageSet = true;
+
+                if (m_bMagSet && m_bJImageSet && m_bDImageSet && m_bBImageSet && (m_bCondSet || TogglePeriodic.isOn))
+                {
+                    Bt.interactable = true;
+                }
+            }
+        }
+    }
+
+    public void LoadBImageBt()
+    {
+        string[] sPath = StandaloneFileBrowser.OpenFilePanel("Choose the image",
+            Application.dataPath + _outfolder,
+            new[] {
+                new ExtensionFilter("Image Files", "png", "jpg", "jpeg")
+            },
+            false);
+
+        if (sPath.Length > 0)
+        {
+            if (LoadBTexture(sPath[0]))
+            {
+                string sFileName = sPath[0];
+                sFileName = sFileName.Replace("\\", "/");
+                int iLastSlash = Mathf.Max(0, sFileName.LastIndexOf("/"));
+                BImageButtonText.text = "B:(" + sFileName.Substring(iLastSlash) + ")";
+                m_bBImageSet = true;
+
+                if (m_bMagSet && m_bJImageSet && m_bDImageSet && m_bBImageSet && (m_bCondSet || TogglePeriodic.isOn))
                 {
                     Bt.interactable = true;
                 }
@@ -588,7 +696,9 @@ last standard deviation/delta time={12}",
             CondButton.interactable = false;
             BoundaryName.text = "periodic";
 
-            if (m_bMagSet && m_bJSet && (m_bCondSet || TogglePeriodic.isOn))
+            if (m_bMagSet &&
+                ((!ToggleJDBImage.isOn && m_bJSet) || (ToggleJDBImage.isOn && m_bJImageSet && m_bDImageSet && m_bBImageSet))
+                && (m_bCondSet || TogglePeriodic.isOn))
             {
                 Bt.interactable = true;
             }
@@ -602,6 +712,38 @@ last standard deviation/delta time={12}",
             {
                 Bt.interactable = false;
             }
+        }
+    }
+
+    public Image JDBImage;
+
+    public void OnToggleJDKImage()
+    {
+        if (ToggleJDBImage.isOn)
+        {
+            JDBImage.gameObject.SetActive(true);
+            JButtonName.text = "Set J Value";
+            JImageButtonText.text = "J:(None)";
+            DImageButtonText.text = "D:(None)";
+            BImageButtonText.text = "B:(None)";
+            JButton.interactable = false;
+            m_bJSet = false;
+            m_bJImageSet = false;
+            m_bDImageSet = false;
+            m_bBImageSet = false;
+        }
+        else
+        {
+            JDBImage.gameObject.SetActive(false);
+            JButtonName.text = "Set J Value";
+            JImageButtonText.text = "J:(None)";
+            DImageButtonText.text = "D:(None)";
+            BImageButtonText.text = "B:(None)";
+            JButton.interactable = true;
+            m_bJSet = false;
+            m_bJImageSet = false;
+            m_bDImageSet = false;
+            m_bBImageSet = false;
         }
     }
 
@@ -702,6 +844,7 @@ last standard deviation/delta time={12}",
 
     private void SetCurrentState(Vector3[] magnetic)
     {
+        //RFloat should be automatically linear
         if (null == _txR || m_iResolution != _txR.width)
         {
             _txR = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false, true);
@@ -732,21 +875,21 @@ last standard deviation/delta time={12}",
 
         if (null == InternalRTR)
         {
-            InternalRTR = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat);
+            InternalRTR = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
             InternalRTR.enableRandomWrite = true;
             InternalRTR.Create();
             OutPutSingle.material.SetTexture("_Nx", InternalRTR);
         }
         if (null == InternalRTG)
         {
-            InternalRTG = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat);
+            InternalRTG = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
             InternalRTG.enableRandomWrite = true;
             InternalRTG.Create();
             OutPutSingle.material.SetTexture("_Ny", InternalRTG);
         }
         if (null == InternalRTB)
         {
-            InternalRTB = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat);
+            InternalRTB = new RenderTexture(m_iResolution, m_iResolution, 0, RenderTextureFormat.RFloat, RenderTextureReadWrite.Linear);
             InternalRTB.enableRandomWrite = true;
             InternalRTB.Create();
             OutPutSingle.material.SetTexture("_Nz", InternalRTB);
@@ -791,7 +934,16 @@ last standard deviation/delta time={12}",
 
     #region Load J Value
 
+    public InputField JA;
+    public InputField JB;
+    public InputField DA;
+    public InputField DB;
+    public InputField BA;
+    public InputField BB;
+
     private static float[] _jvalues = new float[512 * 512];
+    private static float[] _dvalues = new float[512 * 512];
+    private static float[] _bvalues = new float[512 * 512];
     private bool LoadJValue(string sLuaFileName)
     {
         Util.ClearMemory();
@@ -825,6 +977,163 @@ last standard deviation/delta time={12}",
         return true;
     }
 
+    private void SetDValue(float D0, float DoverJ)
+    {
+        for (int x = 0; x < m_iResolution * m_iResolution; ++x)
+        {
+            _dvalues[x] = D0 + DoverJ * _jvalues[x];
+        }
+
+        SetDTexture(_dvalues);
+    }
+
+    private void SetBValue(float B)
+    {
+        for (int x = 0; x < m_iResolution * m_iResolution; ++x)
+        {
+            _bvalues[x] = B;
+        }
+
+        SetBTexture(_bvalues);
+    }
+
+    private Texture2D _theJTexture = null;
+    private bool LoadJTexture(string sPNGFileName)
+    {
+        if (null == _theJTexture/* || m_iResolution != _theJTexture.width*/)
+        {
+            _theJTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGB24, false, true);
+        }
+        if (!_theJTexture.LoadImage(File.ReadAllBytes(sPNGFileName), false))
+        {
+            ShowErrorMessage("Not support this file format.");
+            return false;
+        }
+
+        //if (m_iResolution != _theJTexture.width || m_iResolution != _theJTexture.height)
+        //{
+        //    ShowErrorMessage(string.Format("Only support {0} x {0} file.", m_iResolution));
+        //    return false;
+        //}
+        LoadJTexture();
+        return true;
+    }
+
+    private void LoadJTexture()
+    {
+        int width = _theJTexture.width;
+        int height = _theJTexture.height;
+
+        float fJA = 0.0f;
+        float.TryParse(JA.text, out fJA);
+        float fJB = 0.0f;
+        float.TryParse(JB.text, out fJB);
+        for (int x = 0; x < m_iResolution; ++x)
+        {
+            for (int y = 0; y < m_iResolution; ++y)
+            {
+                int xx = Mathf.RoundToInt(x * width / (float)m_iResolution);
+                int yy = Mathf.RoundToInt(y * height / (float)m_iResolution);
+                Color c = _theJTexture.GetPixel(xx, yy);
+                _jvalues[y * m_iResolution + x] = fJA + (c.r + c.g + c.b) * fJB;
+            }
+        }
+
+        SetJTexture(_jvalues);
+    }
+
+    private Texture2D _theDTexture = null;
+    private bool LoadDTexture(string sPNGFileName)
+    {
+        if (null == _theDTexture /*|| m_iResolution != _theDTexture.width*/)
+        {
+            _theDTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGB24, false, true);
+        }
+        if (!_theDTexture.LoadImage(File.ReadAllBytes(sPNGFileName), false))
+        {
+            ShowErrorMessage("Not support this file format.");
+            return false;
+        }
+
+        //if (m_iResolution != _theDTexture.width || m_iResolution != _theDTexture.height)
+        //{
+        //    ShowErrorMessage(string.Format("Only support {0} x {0} file.", m_iResolution));
+        //    return false;
+        //}
+
+        LoadDTexture();
+        return true;
+    }
+
+    private void LoadDTexture()
+    {
+        int width = _theDTexture.width;
+        int height = _theDTexture.height;
+
+        float fDA = 0.0f;
+        float.TryParse(DA.text, out fDA);
+        float fDB = 0.0f;
+        float.TryParse(DB.text, out fDB);
+        for (int x = 0; x < m_iResolution; ++x)
+        {
+            for (int y = 0; y < m_iResolution; ++y)
+            {
+                int xx = Mathf.RoundToInt(x * width / (float)m_iResolution);
+                int yy = Mathf.RoundToInt(y * height / (float)m_iResolution);
+                Color c = _theDTexture.GetPixel(xx, yy);
+                _dvalues[y * m_iResolution + x] = fDA + (c.r + c.g + c.b) * fDB;
+            }
+        }
+
+        SetDTexture(_dvalues);
+    }
+
+    private Texture2D _theBTexture = null;
+    private bool LoadBTexture(string sPNGFileName)
+    {
+        if (null == _theBTexture/* || m_iResolution != _theBTexture.width*/)
+        {
+            _theBTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RGB24, false, true);
+        }
+        if (!_theBTexture.LoadImage(File.ReadAllBytes(sPNGFileName), false))
+        {
+            ShowErrorMessage("Not support this file format.");
+            return false;
+        }
+
+        //if (m_iResolution != _theBTexture.width || m_iResolution != _theBTexture.height)
+        //{
+        //    ShowErrorMessage(string.Format("Only support {0} x {0} file.", m_iResolution));
+        //    return false;
+        //}
+
+        LoadBTexture();
+        return true;
+    }
+
+    private void LoadBTexture()
+    {
+        int width = _theBTexture.width;
+        int height = _theBTexture.height;
+
+        float fBA = 0.0f;
+        float.TryParse(BA.text, out fBA);
+        float fBB = 0.0f;
+        float.TryParse(BB.text, out fBB);
+        for (int x = 0; x < m_iResolution; ++x)
+        {
+            for (int y = 0; y < m_iResolution; ++y)
+            {
+                int xx = Mathf.RoundToInt(x * width / (float)m_iResolution);
+                int yy = Mathf.RoundToInt(y * height / (float)m_iResolution);
+                Color c = _theBTexture.GetPixel(xx, yy);
+                _bvalues[y * m_iResolution + x] = fBA + (c.r + c.g + c.b) * fBB;
+            }
+        }
+
+        SetBTexture(_bvalues);
+    }
+
     private void SetJTexture(float[] js)
     {
         if (null == JTexture || m_iResolution != JTexture.width)
@@ -850,6 +1159,56 @@ last standard deviation/delta time={12}",
         CmpShader.SetTexture(m_iKernelHandleP, "exchangeStrength", JTexture);
     }
 
+    private void SetDTexture(float[] js)
+    {
+        if (null == DTexture || m_iResolution != DTexture.width)
+        {
+            DTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false, true);
+        }
+
+        for (int i = 0; i < m_iResolution * m_iResolution; ++i)
+        {
+            _color512[i] = new Color(js[i], 0.0f, 0.0f);
+        }
+        DTexture.SetPixels(_color512);
+        DTexture.Apply(false);
+
+        CmpShader.SetTexture(m_iK1Handle, "dmStrength", DTexture);
+        CmpShader.SetTexture(m_iK2Handle, "dmStrength", DTexture);
+        CmpShader.SetTexture(m_iK3Handle, "dmStrength", DTexture);
+        CmpShader.SetTexture(m_iKernelHandle, "dmStrength", DTexture);
+
+        CmpShader.SetTexture(m_iK1HandleP, "dmStrength", DTexture);
+        CmpShader.SetTexture(m_iK2HandleP, "dmStrength", DTexture);
+        CmpShader.SetTexture(m_iK3HandleP, "dmStrength", DTexture);
+        CmpShader.SetTexture(m_iKernelHandleP, "dmStrength", DTexture);
+    }
+
+    private void SetBTexture(float[] js)
+    {
+        if (null == BTexture || m_iResolution != BTexture.width)
+        {
+            BTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.RFloat, false, true);
+        }
+
+        for (int i = 0; i < m_iResolution * m_iResolution; ++i)
+        {
+            _color512[i] = new Color(js[i], 0.0f, 0.0f);
+        }
+        BTexture.SetPixels(_color512);
+        BTexture.Apply(false);
+
+        CmpShader.SetTexture(m_iK1Handle, "magneticStrength", BTexture);
+        CmpShader.SetTexture(m_iK2Handle, "magneticStrength", BTexture);
+        CmpShader.SetTexture(m_iK3Handle, "magneticStrength", BTexture);
+        CmpShader.SetTexture(m_iKernelHandle, "magneticStrength", BTexture);
+
+        CmpShader.SetTexture(m_iK1HandleP, "magneticStrength", BTexture);
+        CmpShader.SetTexture(m_iK2HandleP, "magneticStrength", BTexture);
+        CmpShader.SetTexture(m_iK3HandleP, "magneticStrength", BTexture);
+        CmpShader.SetTexture(m_iKernelHandleP, "magneticStrength", BTexture);
+    }
+
     #endregion
 
     #region Load Boundary Condition
@@ -859,7 +1218,7 @@ last standard deviation/delta time={12}",
     {
         if (null == _theEdgeTexture || m_iResolution != _theEdgeTexture.width)
         {
-            _theEdgeTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.Alpha8, false);
+            _theEdgeTexture = new Texture2D(m_iResolution, m_iResolution, TextureFormat.Alpha8, false, true);
         }
         if (!_theEdgeTexture.LoadImage(File.ReadAllBytes(sPNGFileName), true))
         {
@@ -1008,6 +1367,8 @@ last standard deviation/delta time={12}",
         _txcB = new Color[iNewResolution * iNewResolution];
         _mags = new Vector3[iNewResolution * iNewResolution];
         _jvalues = new float[iNewResolution * iNewResolution];
+        _dvalues = new float[iNewResolution * iNewResolution];
+        _bvalues = new float[iNewResolution * iNewResolution];
 
         BuildInitialTexture(iNewResolution);
 
